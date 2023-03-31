@@ -1,3 +1,5 @@
+package dbfuncs;
+
 import java.sql.*;
 
 public class DBConnection {

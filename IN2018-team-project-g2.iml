@@ -16,7 +16,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" exported="" name="mssql-jdbc-12.2.0.jre11" level="application" />
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
@@ -35,5 +34,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" exported="" name="lib" level="project" />
   </component>
 </module>
