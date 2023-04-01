@@ -1,19 +1,23 @@
-import java.util.Scanner;
-public class Main {
+import javafx.application.Application;
+import javafx.stage.Stage;
+import pages.LoginPage;
+
+public class Main extends Application {
+
+    @Override
+    public void start(Stage primaryStage) throws Exception{
+        // set the title of the application
+        primaryStage.setTitle("AirVia LTD");
+
+        // create an instance of the login page, set the stage to first equal the login page
+        LoginPage loginPage = new LoginPage();
+        loginPage.setStage(primaryStage);
+
+        // show login page
+        loginPage.createLoginPage();
+    }
+
     public static void main(String[] args) {
-
-        // Capture User Information (Username + Password)
-        Scanner userInfoScanner = new Scanner(System.in);
-
-        System.out.println("Enter username");
-        String userName = userInfoScanner.nextLine();
-        System.out.println("Enter password");
-        String userPassword = userInfoScanner.nextLine();
-
-        if (Login.authenticate(userName, userPassword)) {
-            System.out.println("Login successful!");
-        }else{
-            System.out.println("Login Failed!");
-        }
+        launch(args);
     }
 }
