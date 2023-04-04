@@ -39,6 +39,13 @@ public class FlightsPage extends BorderPane {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         buttonBox.getChildren().addAll(button1, spacer, button2);
 
+        // set payments page route
+        button1.setOnAction(event -> {
+            PaymentPage paymentPage = new PaymentPage(stage);
+            Scene scene = new Scene(paymentPage, 400, 400);
+            stage.setScene(scene);
+        });
+
         // Add margin to the bottom and left of the buttonBox
         BorderPane.setMargin(buttonBox, new Insets(0, 10, 10, 10));
 
