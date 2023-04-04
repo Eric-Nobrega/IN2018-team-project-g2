@@ -2,6 +2,7 @@ package pages;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -19,6 +20,13 @@ public class TravelAdvisorHomePage extends BorderPane {
         Button button3 = new Button("Blanks");
         Button button4 = new Button("Void Blanks");
         Button button5 = new Button("Generate Individual Report");
+
+        // set create tickets page route
+        button1.setOnAction(event -> {
+            CreateTicketPage createTicketPage = new CreateTicketPage(stage);
+            Scene scene = new Scene(createTicketPage, 400, 400);
+            stage.setScene(scene);
+        });
 
         // set logout button event handler
         logoutButton.setOnAction(event -> {
