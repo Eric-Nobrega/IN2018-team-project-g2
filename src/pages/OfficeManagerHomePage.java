@@ -33,6 +33,13 @@ public class OfficeManagerHomePage extends BorderPane {
             stage.setScene(scene);
         });
 
+        // set re assign blanks route
+        button3.setOnAction(event -> {
+            BlanksReassignmentPage blanksReassignmentPage = new BlanksReassignmentPage(stage);
+            Scene scene = new Scene(blanksReassignmentPage, 400, 400);
+            stage.setScene(scene);
+        });
+
         // set logout button event handler
         logoutButton.setOnAction(event -> {
             // log user out and redirect to login page
