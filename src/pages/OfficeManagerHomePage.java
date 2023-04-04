@@ -19,6 +19,13 @@ public class OfficeManagerHomePage extends BorderPane {
         Button button2 = new Button("Assign Blanks");
         Button button3 = new Button("Re-Assign Blanks");
 
+        // set assign blanks route
+        button2.setOnAction(event -> {
+            AssignBlanksPage assignBlanksPage = new AssignBlanksPage(stage);
+            Scene scene = new Scene(assignBlanksPage, 400, 400);
+            stage.setScene(scene);
+        });
+
         // set logout button event handler
         logoutButton.setOnAction(event -> {
             // log user out and redirect to login page
