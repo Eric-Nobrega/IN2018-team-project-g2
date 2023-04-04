@@ -2,6 +2,7 @@ package pages;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -16,6 +17,13 @@ public class CustomerHomePage extends BorderPane {
         Button logoutButton = new Button("Logout");
         Button button1 = new Button("View Flights");
         Button button2 = new Button("Account Information");
+
+        // set view flights
+        button1.setOnAction(event -> {
+            FlightsPage flightsPage = new FlightsPage(stage);
+            Scene scene = new Scene(flightsPage, 400, 400);
+            stage.setScene(scene);
+        });
 
         // set logout button event handler
         logoutButton.setOnAction(event -> {
@@ -37,3 +45,4 @@ public class CustomerHomePage extends BorderPane {
         this.setBottom(logoutButton);
     }
 }
+
