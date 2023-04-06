@@ -18,6 +18,7 @@ public class OfficeManagerHomePage extends BorderPane {
         Button button1 = new Button("Generate Report");
         Button button2 = new Button("Assign Blanks");
         Button button3 = new Button("Re-Assign Blanks");
+        Button button4 = new Button("Modify Commision Rate");
 
         // set generate report route
         button1.setOnAction(event -> {
@@ -40,6 +41,13 @@ public class OfficeManagerHomePage extends BorderPane {
             stage.setScene(scene);
         });
 
+        // set mod commison rate route
+        button4.setOnAction(event -> {
+            ModifyCommisionRate modifyCommisionRate = new ModifyCommisionRate(stage);
+            Scene scene = new Scene(modifyCommisionRate, 400, 400);
+            stage.setScene(scene);
+        });
+
         // set logout button event handler
         logoutButton.setOnAction(event -> {
             // log user out and redirect to login page
@@ -48,7 +56,7 @@ public class OfficeManagerHomePage extends BorderPane {
             loginPage.createLoginPage();
         });
 
-        VBox centerBox = new VBox(10, button1, button2, button3);
+        VBox centerBox = new VBox(10, button1, button2, button3, button4);
         centerBox.setAlignment(Pos.CENTER);
 
         BorderPane.setMargin(welcomeLabel, new Insets(45));
