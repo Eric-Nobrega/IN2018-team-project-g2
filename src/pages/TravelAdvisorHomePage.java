@@ -28,6 +28,13 @@ public class TravelAdvisorHomePage extends BorderPane {
             stage.setScene(scene);
         });
 
+        // set blanks page route
+        button3.setOnAction(event -> {
+            BlanksPage blanksPage = new BlanksPage(stage);
+            Scene scene = new Scene(blanksPage, 400, 400);
+            stage.setScene(scene);
+        });
+
         // set logout button event handler
         logoutButton.setOnAction(event -> {
             // log user out and redirect to login page

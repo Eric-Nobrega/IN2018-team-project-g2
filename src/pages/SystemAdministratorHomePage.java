@@ -20,6 +20,13 @@ public class SystemAdministratorHomePage extends BorderPane {
         Button button3 = new Button("Blanks");
         Button button4 = new Button("Manage Staff");
 
+        // set agency details page route
+        button1.setOnAction(event -> {
+            AgencyDetailsPage agencyDetailsPage = new AgencyDetailsPage(stage);
+            Scene scene = new Scene(agencyDetailsPage, 400, 400);
+            stage.setScene(scene);
+        });
+
         // set logout button event handler
         logoutButton.setOnAction(event -> {
             // log user out and redirect to login page
