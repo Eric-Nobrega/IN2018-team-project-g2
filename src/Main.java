@@ -1,20 +1,19 @@
 import javafx.application.Application;
 import javafx.stage.Stage;
-import pages.LoginPage;
+import pages.general.LoginPage;
 
 public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        // set the title of the application
-        primaryStage.setTitle("AirVia LTD");
-
-        // create an instance of the login page, set the stage to first equal the login page
+        // Launch The Login Page
         LoginPage loginPage = new LoginPage();
         loginPage.setStage(primaryStage);
-
-        // show login page
         loginPage.createLoginPage();
+
+        // Set The Application Title
+        primaryStage.setTitle("AirVia LTD");
+        primaryStage.setResizable(false);
     }
 
     public static void main(String[] args) {
