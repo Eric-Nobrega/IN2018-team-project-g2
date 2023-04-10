@@ -76,6 +76,20 @@ public class SystemAdministratorMainPage extends BorderPane {
             stage.setScene(scene);
         });
 
+        // Add Blank
+        addBlankButton.setOnAction(event -> {
+            SystemAdministratorAddBlank systemAdministratorAddBlank = new SystemAdministratorAddBlank(stage);
+            Scene scene = new Scene(systemAdministratorAddBlank, 850, 500);
+            stage.setScene(scene);
+        });
+
+        // Add Blank
+        viewBlankStockButton.setOnAction(event -> {
+            SystemAdministratorViewBlankStock systemAdministratorViewBlankStock = new SystemAdministratorViewBlankStock(stage);
+            Scene scene = new Scene(systemAdministratorViewBlankStock, 850, 500);
+            stage.setScene(scene);
+        });
+
         // Set the same width for all buttons
         int buttonWidth = 200;
         viewBlankStockButton.setPrefWidth(buttonWidth);

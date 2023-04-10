@@ -2,6 +2,7 @@ package pages.traveladvisor;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
@@ -31,6 +32,13 @@ public class TravelAdvisorMainPage extends BorderPane {
 
         // Create Logout Button
         Button logoutButton = new Button("Logout");
+
+        // Page Routes
+        viewOwnBlankStockButton.setOnAction(event -> {
+        //    TravelAdvisorViewOwnBlankStock travelAdvisorViewOwnBlankStock = new TravelAdvisorViewOwnBlankStock(stage);
+         //   Scene scene = new Scene(travelAdvisorViewOwnBlankStock, 850, 500);
+        //    stage.setScene(scene);
+        });
 
         // Logout Button Functionality
         logoutButton.setOnAction(event -> {
