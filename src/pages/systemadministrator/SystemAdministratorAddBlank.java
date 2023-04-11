@@ -50,11 +50,11 @@ public class SystemAdministratorAddBlank extends BorderPane {
         // Add Blanks Button Logic
         addBlanksButton.setOnAction(event -> {
             String blankType = blankTypeField.getText();
-            String amountReceived = amountReceivedField.getText();
+            int amountReceived = Integer.parseInt(amountReceivedField.getText());
             String dateReceived = dateReceivedField.getText();
 
             // Add the new blanks to the database
-            boolean success = DBMethods.addBlanks(blankType, dateReceived);
+            boolean success = DBMethods.addBlanks(blankType, dateReceived, amountReceived);
             if (success) {
                 System.out.println("Blanks added!");
             } else {

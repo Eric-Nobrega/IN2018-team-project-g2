@@ -49,6 +49,8 @@ public class DBMethods {
                 success = true;
             }
 
+            System.out.println(userID);
+
             // close database resources
             rs.close();
             statement.close();
@@ -308,16 +310,18 @@ public class DBMethods {
         }
     }
 
-    public static ResultSet getBlanksByAdvisorID(int advisorID) {
-        String sql = "SELECT * FROM Blanks WHERE `Travel AdvisorAdvisorId` = ?";
-        try {
-            // establish database connection
-            Connection databaseConnection = connectToDB();
+    public static ResultSet getBlanksByAdvisorID() {
+        String sql2 = "SELECT Type, COUNT(*) AS qty FROM BlanksTB WHERE `Travel AdvisorAdvisorId` = 1 GROUP BY Type;";
 
+        // establish database connection
+        Connection databaseConnection = connectToDB();
+
+        try {
             // create prepared statement for SQL query
-            PreparedStatement stmt = databaseConnection.prepareStatement(sql);
-            stmt.setInt(1, advisorID);
-            return stmt.executeQuery();
+            PreparedStatement stmt2 = databaseConnection.prepareStatement(sql2);
+            ResultSet rs2 = stmt2.executeQuery();
+
+            return rs2;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -493,16 +497,18 @@ public class DBMethods {
 
             // retrieve customer details
             Customer customer = null;
-            // public Customer(int id, String customerName, int customerPhoneNumber,  String customerEmail, String customerPaymentInfo,  String customerRelationship) {
             if (rs.next()) {
-                int customerId = rs.getInt("CustomerId");
-                String fName = rs.getString("CustomerName");
-                int phone = rs.getInt("CustomerphoneNumber");
-                String email = rs.getString("CustomerEmail");
-                String payment = rs.getString("PaymentInfo");
-                String relationship = rs.getString("Relationship");
 
-                customer = new Customer(customerId, fName, phone, email, payment, relationship);
+                int customerId = rs.getInt("CustomerId");
+                String customerName = rs.getString("CustomerName");
+                int customerPhoneNumber = rs.getInt("CustomerphoneNumber");
+                String customerEmail = rs.getString("CustomerEmail");
+                String cardNumber = rs.getString("CardNumber");
+                int cardCVV = rs.getInt("CVV");
+                String customerRelationship = rs.getString("Relationship");
+                int travelAgentID = rs.getInt("Travel AgentAgentID");
+
+                customer = new Customer(customerId, customerName, customerPhoneNumber, customerEmail, cardNumber, cardCVV, customerRelationship, travelAgentID);
             }
 
             // close database resources
@@ -663,10 +669,10 @@ public class DBMethods {
         }
     }
 
-    public static boolean addBlanks(String blankType, String dateReceived){
+    public static boolean addBlanks(String blankType, String dateReceived, int amountReceived){
 
-        // SQL query to insert new user
-        String query = "INSERT INTO Blanks (SerialNumber, BlankType, isValid, isVoid, isAssigned, DateReceived) VALUES (?, ?, ?, ?, ?, ?)";
+        // SQL query to insert new blank
+        String query = "INSERT INTO BlanksTB (SerialNumber, TYPE, isValid, isVoid, isAssigned, DateReceived) VALUES (?, ?, ?, ?, ?, ?)";
 
         try {
             // establish database connection
@@ -674,31 +680,39 @@ public class DBMethods {
 
             // create prepared statement for SQL query
             PreparedStatement statement = databaseConnection.prepareStatement(query);
-            statement.setString(1, String.valueOf(1));
-            statement.setString(2, blankType);
-            statement.setString(3, String.valueOf(false));
-            statement.setString(4, String.valueOf(false));
-            statement.setString(5, String.valueOf(false));
-            statement.setString(6,  dateReceived);
 
-            // execute query
-            int rowsInserted = statement.executeUpdate();
+            // generate and set serial number for each blank
+            int sequenceNumber = 1;
+            for (int i = 0; i < amountReceived; i++) {
+                String serialNumber = String.format("%s%08d", blankType, sequenceNumber);
+                statement.setString(1, String.valueOf(serialNumber));
+                statement.setString(2, blankType);
+                statement.setString(3, String.valueOf(false));
+                statement.setString(4, String.valueOf(false));
+                statement.setString(5, String.valueOf(false));
+                statement.setString(6, dateReceived);
+                statement.addBatch();
+                sequenceNumber++;
+            }
+
+            // execute batch insert
+            int[] rowsInserted = statement.executeBatch();
 
             // close database resources
             statement.close();
             databaseConnection.close();
 
-            return rowsInserted > 0;
+            return rowsInserted.length > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
-    };
+    }
 
     public static ResultSet getAllBlanks() {
 
         // SQL query to retrieve all user names
-        String query = "SELECT * FROM Blanks";
+        String query = "SELECT * FROM BlanksTB";
 
         try {
             // establish database connection
@@ -719,7 +733,7 @@ public class DBMethods {
     }
 
     public static ResultSet getBlanksByType(String blankType) {
-        String sql = "SELECT BlankType, COUNT(*) AS Quantity FROM Blanks WHERE BlankType = ? GROUP BY BlankType";
+        String sql = "SELECT BlankType, COUNT(*) AS Quantity FROM Blank WHERE BlankType = ? GROUP BY BlankType";
         try {
             Connection databaseConnection = connectToDB();
             PreparedStatement statement = databaseConnection.prepareStatement(sql);
@@ -732,4 +746,124 @@ public class DBMethods {
             return null;
         }
     }
+    public static void assignBlanks(String blankType, String advisorName, int amount) {
+        try {
+            // Connect to the database
+            Connection conn = connectToDB();
+
+            // Get the ID of the selected travel advisor
+            String[] names = advisorName.split(" ");
+            String advisorFirstName = names[0];
+            String advisorLastName = names[1];
+
+            System.out.println(advisorFirstName);
+            System.out.println(advisorLastName);
+
+            String getAdvisorIdQuery = "SELECT AdvisorId FROM `Travel Advisor` WHERE AdvisorFirstName=? AND AdvisorLastName=?";
+            PreparedStatement getAdvisorIdStmt = conn.prepareStatement(getAdvisorIdQuery);
+            getAdvisorIdStmt.setString(1, advisorFirstName);
+            getAdvisorIdStmt.setString(2, advisorLastName);
+            ResultSet advisorIdRs = getAdvisorIdStmt.executeQuery();
+            advisorIdRs.next();
+            int advisorId = advisorIdRs.getInt("AdvisorId");
+
+            // Select the required number of blank rows from the BlanksTB table
+            String selectBlanksQuery = "SELECT SerialNumber FROM BlanksTB WHERE TYPE=? AND isAssigned=0 LIMIT ?";
+            PreparedStatement selectBlanksStmt = conn.prepareStatement(selectBlanksQuery);
+            selectBlanksStmt.setString(1, blankType);
+            selectBlanksStmt.setInt(2, amount);
+            ResultSet blankSerialNumbers = selectBlanksStmt.executeQuery();
+
+            // Update the Travel Advisor table with the ID of the selected travel advisor
+            String updateTravelAdvisorQuery = "UPDATE `Travel Advisor` SET AdvisorId=? WHERE AdvisorFirstName=? AND AdvisorLastName=?";
+            PreparedStatement updateTravelAdvisorStmt = conn.prepareStatement(updateTravelAdvisorQuery);
+            updateTravelAdvisorStmt.setInt(1, advisorId);
+            updateTravelAdvisorStmt.setString(2, advisorFirstName);
+            updateTravelAdvisorStmt.setString(3, advisorLastName);
+            updateTravelAdvisorStmt.executeUpdate();
+
+            // Mark the selected blanks as assigned
+            String markBlanksAssignedQuery = "UPDATE BlanksTB SET isAssigned=1, `Travel AdvisorAdvisorId`=? WHERE SerialNumber=?";
+            PreparedStatement markBlanksAssignedStmt = conn.prepareStatement(markBlanksAssignedQuery);
+            while (blankSerialNumbers.next()) {
+                String blankSerialNumber = blankSerialNumbers.getString("SerialNumber");
+                markBlanksAssignedStmt.setInt(1, advisorId);
+                markBlanksAssignedStmt.setString(2, blankSerialNumber);
+                markBlanksAssignedStmt.executeUpdate();
+            }
+
+            // Close the database connection and statements
+            blankSerialNumbers.close();
+            getAdvisorIdStmt.close();
+            selectBlanksStmt.close();
+            updateTravelAdvisorStmt.close();
+            markBlanksAssignedStmt.close();
+            conn.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void recordSale(String customerName, String customerAddress, String customerEmail, String customerPhoneNumber, String date, String destination, String payNowOrLater, String paymentMethod, String currencyName, int priceAmount, String cardNumber, String cardCVV, String discountGiven) {
+
+        try {
+            // Open a connection to the database
+            Connection conn = connectToDB();
+
+            // Insert data into the customer table
+            String customerSql = "INSERT INTO Customer (CustomerName, Address, CustomerphoneNumber, CustomerEmail, CardNumber, CVV) VALUES (?, ?, ?, ?, ?, ?)";
+            PreparedStatement customerStmt = conn.prepareStatement(customerSql, Statement.RETURN_GENERATED_KEYS);
+            customerStmt.setString(1, customerName);
+            customerStmt.setString(2, customerAddress);
+            customerStmt.setString(3, customerPhoneNumber);
+            customerStmt.setString(4, customerEmail);
+            customerStmt.setString(5, cardNumber);
+            customerStmt.setString(6, cardCVV);
+            int customerId = -1;
+            int affectedRows = customerStmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Insert into Customer table failed, no rows affected.");
+            }
+            try (ResultSet generatedKeys = customerStmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    customerId = generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Insert into Customer table failed, no ID obtained.");
+                }
+            }
+
+            // Insert data into the sale table
+            String saleSql = "INSERT INTO Sale (id, CustomerName, isPayNow, Amount, isCash, isCard, isDomestic, isInterline, Currency, Date, DiscountApplied) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement saleStmt = conn.prepareStatement(saleSql);
+            saleStmt.setInt(1, customerId);
+            saleStmt.setString(2, customerName);
+            saleStmt.setString(3, payNowOrLater);
+            saleStmt.setInt(4, priceAmount);
+            if (paymentMethod.equalsIgnoreCase("cash")) {
+                saleStmt.setInt(5, 1);
+                saleStmt.setInt(6, 0);
+            } else {
+                saleStmt.setInt(5, 0);
+                saleStmt.setInt(6, 1);
+            }
+            if (destination.equalsIgnoreCase("domestic")) {
+                saleStmt.setInt(7, 1);
+                saleStmt.setInt(8, 0);
+            } else {
+                saleStmt.setInt(7, 0);
+                saleStmt.setInt(8, 1);
+            }
+            saleStmt.setString(9, currencyName);
+            saleStmt.setString(10, date);
+            saleStmt.setString(11, discountGiven);
+            saleStmt.executeUpdate();
+
+            // Close the database connection
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

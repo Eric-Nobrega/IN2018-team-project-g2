@@ -59,7 +59,7 @@ public class SystemAdministratorViewBlankStock extends BorderPane {
         // Define quantity column
         TableColumn<Blank, Integer> quantityColumn = new TableColumn<>("Quantity");
         quantityColumn.setCellValueFactory(cellData -> {
-            String blankType = cellData.getValue().getBlankType();
+            String blankType = cellData.getValue().getTYPE();
             int quantity = getBlankTypeQuantity(blankType);
             return new SimpleIntegerProperty(quantity).asObject();
         });
@@ -88,12 +88,11 @@ public class SystemAdministratorViewBlankStock extends BorderPane {
         ResultSet rs = DBMethods.getAllBlanks();
         try {
             while (rs.next()) {
-                String blankType = rs.getString("BlankType");
+                String blankType = rs.getString("TYPE");
                 quantities.merge(blankType, 1, Integer::sum);
             }
             for (String blankType : quantities.keySet()) {
-                int quantity = quantities.get(blankType);
-                blanks.add(new Blank(0, quantity, blankType));
+                blanks.add(new Blank(0, blankType));
             }
         } catch (SQLException e) {
             System.out.println("Error retrieving blanks from database!");
@@ -107,7 +106,7 @@ public class SystemAdministratorViewBlankStock extends BorderPane {
         int quantity = 0;
         try {
             Connection connection = DBMethods.connectToDB();
-            PreparedStatement statement = connection.prepareStatement("SELECT BlankType, COUNT(*) AS Quantity FROM Blanks WHERE BlankType = ? GROUP BY BlankType");
+            PreparedStatement statement = connection.prepareStatement("SELECT TYPE, COUNT(*) AS Quantity FROM BlanksTB WHERE TYPE = ? GROUP BY TYPE");
             statement.setString(1, blankType);
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {

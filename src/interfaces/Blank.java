@@ -1,37 +1,31 @@
 package interfaces;
 
 public class Blank {
-    private int id;
-    private int quantity;
-    private String blankType;
+    private long id;
+    private String TYPE;
 
-    public Blank(int id, int quantity, String blankType) {
+    public Blank(long id,  String blankType) {
         this.id = id;
-        this.quantity = quantity;
-        this.blankType = blankType;
+        this.TYPE = blankType;
     }
 
-    public int getId() {
+    public Blank() {
+
+    }
+
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public int getQuantity() {
-        return quantity;
+    public String getTYPE() {
+        return TYPE;
     }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public String getBlankType() {
-        return blankType;
-    }
-
-    public void setBlankType(String blankType) {
-        this.blankType = blankType;
+    public void setTYPE(String TYPE) {
+        this.TYPE = TYPE;
     }
 }

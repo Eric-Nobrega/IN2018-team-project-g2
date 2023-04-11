@@ -1,25 +1,28 @@
 package interfaces;
 
 public class Customer {
-    private int id;
-
+    private int customerId;
     private String customerName;
     private int customerPhoneNumber;
     private String customerEmail;
-    private String customerPaymentInfo;
+    private String cardNumber;
+    private int cvv;
     private String customerRelationship;
+    private int travelAgentId;
 
-    public Customer(int id, String customerName, int customerPhoneNumber, String customerEmail, String customerPaymentInfo, String customerRelationship) {
-        this.id = id;
+    public Customer(int customerId, String customerName, int customerPhoneNumber, String customerEmail, String cardNumber, int cvv, String customerRelationship, int travelAgentId) {
+        this.customerId = customerId;
         this.customerName = customerName;
         this.customerPhoneNumber = customerPhoneNumber;
         this.customerEmail = customerEmail;
-        this.customerPaymentInfo = customerPaymentInfo;
+        this.cardNumber = cardNumber;
+        this.cvv = cvv;
         this.customerRelationship = customerRelationship;
+        this.travelAgentId = travelAgentId;
     }
 
-    public int getId() {
-        return id;
+    public int getCustomerId() {
+        return customerId;
     }
 
     public String getCustomerName() {
@@ -34,11 +37,19 @@ public class Customer {
         return customerEmail;
     }
 
-    public String getCustomerPaymentInfo() {
-        return customerPaymentInfo;
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public int getCvv() {
+        return cvv;
     }
 
     public String getCustomerRelationship() {
         return customerRelationship;
+    }
+
+    public int getTravelAgentId() {
+        return travelAgentId;
     }
 }

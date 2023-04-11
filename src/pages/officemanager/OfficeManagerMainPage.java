@@ -13,6 +13,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import pages.general.LoginPage;
+import pages.systemadministrator.SystemAdministratorViewBlankStock;
 
 public class OfficeManagerMainPage extends BorderPane {
 
@@ -34,6 +35,8 @@ public class OfficeManagerMainPage extends BorderPane {
         Button modifyCustomerButton = new Button("Modify Customer Relationship");
         Button modifyCommissionButton = new Button("Modify Commission Rate");
         Button setCustomerDiscountButton = new Button("Set Customer Discount Rate");
+        Button assignBlankButton = new Button("Assign Blanks");
+        Button reAssignBlankButton = new Button("Reassign Blanks");
 
         // Create Logout Button
         Button logoutButton = new Button("Logout");
@@ -49,6 +52,12 @@ public class OfficeManagerMainPage extends BorderPane {
         modifyCustomerButton.setOnAction(event -> {
             OfficeManagerModifyCustomerRelationship modifyCustomerRelationship = new OfficeManagerModifyCustomerRelationship(stage);
             Scene scene = new Scene(modifyCustomerRelationship, 850, 500);
+            stage.setScene(scene);
+        });
+
+        viewBlankStockButton.setOnAction(event -> {
+            SystemAdministratorViewBlankStock viewBlankStock = new SystemAdministratorViewBlankStock(stage);
+            Scene scene = new Scene(viewBlankStock, 850, 500);
             stage.setScene(scene);
         });
 
@@ -76,6 +85,17 @@ public class OfficeManagerMainPage extends BorderPane {
             stage.setScene(scene);
         });
 
+        assignBlankButton.setOnAction(event -> {
+            OfficeManagerAssignBlank assignBlank = new OfficeManagerAssignBlank(stage);
+            Scene scene = new Scene(assignBlank, 850, 500);
+            stage.setScene(scene);
+        });
+
+        reAssignBlankButton.setOnAction(event -> {
+            OfficeManagerSetDiscountRate setDiscountRate = new OfficeManagerSetDiscountRate(stage);
+            Scene scene = new Scene(setDiscountRate, 850, 500);
+            stage.setScene(scene);
+        });
 
         // Set the same width for all buttons
         int buttonWidth = 200;
@@ -89,11 +109,12 @@ public class OfficeManagerMainPage extends BorderPane {
         modifyCurrencyConversionButton.setPrefWidth(buttonWidth);
         modifyCommissionButton.setPrefWidth(buttonWidth);
         setCustomerDiscountButton.setPrefWidth(buttonWidth);
+        assignBlankButton.setPrefWidth(buttonWidth);
 
         // Create two containers to hold the buttons
         VBox leftBox = new VBox(20, createReport1Button, createReport2Button, createReport3Button, addCurrencyRateButton, viewCurrencyConversionButton);
         leftBox.setAlignment(Pos.CENTER);
-        VBox rightBox = new VBox(20, viewBlankStockButton, modifyCustomerButton, modifyCurrencyConversionButton, modifyCommissionButton, setCustomerDiscountButton);
+        VBox rightBox = new VBox(20, viewBlankStockButton, modifyCustomerButton, modifyCurrencyConversionButton, modifyCommissionButton, setCustomerDiscountButton, assignBlankButton);
         rightBox.setAlignment(Pos.CENTER);
 
         // Create a container to hold the two containers

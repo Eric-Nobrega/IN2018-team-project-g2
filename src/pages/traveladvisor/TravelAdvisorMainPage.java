@@ -35,9 +35,15 @@ public class TravelAdvisorMainPage extends BorderPane {
 
         // Page Routes
         viewOwnBlankStockButton.setOnAction(event -> {
-        //    TravelAdvisorViewOwnBlankStock travelAdvisorViewOwnBlankStock = new TravelAdvisorViewOwnBlankStock(stage);
-         //   Scene scene = new Scene(travelAdvisorViewOwnBlankStock, 850, 500);
-        //    stage.setScene(scene);
+        TravelAdvisorViewOwnBlankStock travelAdvisorViewOwnBlankStock = new TravelAdvisorViewOwnBlankStock(stage);
+         Scene scene = new Scene(travelAdvisorViewOwnBlankStock, 850, 500);
+        stage.setScene(scene);
+        });
+
+        recordSaleButton.setOnAction(event -> {
+            TravelAdvisorRecordSale travelAdvisorRecordSale = new TravelAdvisorRecordSale(stage);
+            Scene scene = new Scene(travelAdvisorRecordSale, 850, 500);
+            stage.setScene(scene);
         });
 
         // Logout Button Functionality
