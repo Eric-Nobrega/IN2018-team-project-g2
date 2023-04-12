@@ -17,7 +17,10 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import pages.systemadministrator.SystemAdministratorMainPage;
 
-import static dbfuncs.DBMethods.assignBlanks;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import static dbfuncs.DBMethods.*;
 
 public class OfficeManagerAssignBlank extends BorderPane {
 
@@ -42,15 +45,36 @@ public class OfficeManagerAssignBlank extends BorderPane {
         // Create Blank Type Selection
         Label blankTypeLabel = new Label("Select Blank Type:");
         ComboBox<String> blankTypeComboBox = new ComboBox<>();
-        ObservableList<String> blankTypes = FXCollections.observableArrayList("444", "222", "111");
-        blankTypeComboBox.setItems(blankTypes);
 
         // Create Travel Advisor Selection
         Label travelAdvisorLabel = new Label("Select Travel Advisor:");
         ComboBox<String> travelAdvisorComboBox = new ComboBox<>();
-        // TODO: Replace the following dummy data with real data
-        ObservableList<String> travelAdvisors = FXCollections.observableArrayList("John Doe", "Bob", "Charlie");
-        travelAdvisorComboBox.setItems(travelAdvisors);
+
+        // call the getAllTravelAgents method to retrieve the ResultSet
+        ResultSet rs = getAllTravelAdvisors();
+
+        try {
+            // iterate over the ResultSet and add each FullName value to the ComboBox
+            while (rs.next()) {
+                String fullName = rs.getString("AdvisorFirstName") + " " +  rs.getString("AdvisorLastName");
+                travelAdvisorComboBox.getItems().add(fullName);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // call the getAllTravelAgents method to retrieve the ResultSet
+        ResultSet rs2 = getAllBlanksCodes();
+
+        try {
+            // iterate over the ResultSet and add each FullName value to the ComboBox
+            while (rs2.next()) {
+                String blankCode = rs2.getString("BlankCode");
+                blankTypeComboBox.getItems().add(blankCode);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         // Create Confirm Button
         Button confirmButton = new Button("Confirm");

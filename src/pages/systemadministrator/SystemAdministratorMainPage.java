@@ -90,6 +90,37 @@ public class SystemAdministratorMainPage extends BorderPane {
             stage.setScene(scene);
         });
 
+        addBlankCodeButton.setOnAction(event -> {
+            SystemAdministratorAddBlankCode systemAdministratorAddBlankCode = new SystemAdministratorAddBlankCode(stage);
+            Scene scene = new Scene(systemAdministratorAddBlankCode, 850, 500);
+            stage.setScene(scene);
+        });
+
+        removeBlankCodeButton.setOnAction(event -> {
+            SystemAdministratorRemoveBlankCode  removeBlank= new SystemAdministratorRemoveBlankCode(stage);
+            Scene scene = new Scene(removeBlank, 850, 500);
+            stage.setScene(scene);
+        });
+
+        editStaffDetailsButton.setOnAction(event -> {
+            SystemAdministratorEditStaffUser  editStaffUser = new SystemAdministratorEditStaffUser(stage);
+            Scene scene = new Scene(editStaffUser, 850, 500);
+            stage.setScene(scene);
+        });
+
+        removeBlankButton.setOnAction(event -> {
+            SystemAdministratorRemoveBlank  removeBlank = new SystemAdministratorRemoveBlank(stage);
+            Scene scene = new Scene(removeBlank, 850, 500);
+            stage.setScene(scene);
+        });
+
+        removeBlankCodeButton.setOnAction(event -> {
+            SystemAdministratorRemoveBlankCode  removeBlankCode = new SystemAdministratorRemoveBlankCode(stage);
+            Scene scene = new Scene(removeBlankCode, 850, 500);
+            stage.setScene(scene);
+        });
+
+
         // Set the same width for all buttons
         int buttonWidth = 200;
         viewBlankStockButton.setPrefWidth(buttonWidth);

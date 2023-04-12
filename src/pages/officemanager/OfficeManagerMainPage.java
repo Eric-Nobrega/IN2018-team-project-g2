@@ -28,13 +28,12 @@ public class OfficeManagerMainPage extends BorderPane {
         Button createReport1Button = new Button("Create Report 1");
         Button createReport2Button = new Button("Create Report 2");
         Button createReport3Button = new Button("Create Report 3");
-        Button addCurrencyRateButton = new Button("Add Currency Conversion Rate");
         Button viewCurrencyConversionButton = new Button("View Currency Conversion Rate");
-        Button modifyCurrencyConversionButton = new Button("Modify Currency Conversion Rate");
         Button viewBlankStockButton = new Button("View Total Blank Stock");
-        Button modifyCustomerButton = new Button("Modify Customer Relationship");
-        Button modifyCommissionButton = new Button("Modify Commission Rate");
-        Button setCustomerDiscountButton = new Button("Set Customer Discount Rate");
+        Button modifyCurrencyConversionButton = new Button("Modify/Set Currency Conversion Rate");
+        Button modifyCustomerButton = new Button("Modify/Set Customer Relationship");
+        Button modifyCommissionButton = new Button("Modify/Set Discount Rate");
+        Button setCustomerDiscountButton = new Button("Modify/Set Commission Rate");
         Button assignBlankButton = new Button("Assign Blanks");
         Button reAssignBlankButton = new Button("Reassign Blanks");
 
@@ -62,7 +61,7 @@ public class OfficeManagerMainPage extends BorderPane {
         });
 
         modifyCommissionButton.setOnAction(event -> {
-            OfficeManagerModifyCommisionRate modifyCommisionRate = new OfficeManagerModifyCommisionRate(stage);
+            OfficeManagerModifyDiscountRates modifyCommisionRate = new OfficeManagerModifyDiscountRates(stage);
             Scene scene = new Scene(modifyCommisionRate, 850, 500);
             stage.setScene(scene);
         });
@@ -80,7 +79,7 @@ public class OfficeManagerMainPage extends BorderPane {
         });
 
         setCustomerDiscountButton.setOnAction(event -> {
-            OfficeManagerSetDiscountRate setDiscountRate = new OfficeManagerSetDiscountRate(stage);
+            OfficeManagerModifyCommissionRates setDiscountRate = new OfficeManagerModifyCommissionRates(stage);
             Scene scene = new Scene(setDiscountRate, 850, 500);
             stage.setScene(scene);
         });
@@ -92,7 +91,7 @@ public class OfficeManagerMainPage extends BorderPane {
         });
 
         reAssignBlankButton.setOnAction(event -> {
-            OfficeManagerSetDiscountRate setDiscountRate = new OfficeManagerSetDiscountRate(stage);
+            OfficeManagerModifyCommissionRates setDiscountRate = new OfficeManagerModifyCommissionRates(stage);
             Scene scene = new Scene(setDiscountRate, 850, 500);
             stage.setScene(scene);
         });
@@ -102,7 +101,6 @@ public class OfficeManagerMainPage extends BorderPane {
         createReport1Button.setPrefWidth(buttonWidth);
         createReport2Button.setPrefWidth(buttonWidth);
         createReport3Button.setPrefWidth(buttonWidth);
-        addCurrencyRateButton.setPrefWidth(buttonWidth);
         viewCurrencyConversionButton.setPrefWidth(buttonWidth);
         viewBlankStockButton.setPrefWidth(buttonWidth);
         modifyCustomerButton.setPrefWidth(buttonWidth);
@@ -112,9 +110,9 @@ public class OfficeManagerMainPage extends BorderPane {
         assignBlankButton.setPrefWidth(buttonWidth);
 
         // Create two containers to hold the buttons
-        VBox leftBox = new VBox(20, createReport1Button, createReport2Button, createReport3Button, addCurrencyRateButton, viewCurrencyConversionButton);
+        VBox leftBox = new VBox(20, createReport1Button, createReport2Button, createReport3Button, viewCurrencyConversionButton, setCustomerDiscountButton);
         leftBox.setAlignment(Pos.CENTER);
-        VBox rightBox = new VBox(20, viewBlankStockButton, modifyCustomerButton, modifyCurrencyConversionButton, modifyCommissionButton, setCustomerDiscountButton, assignBlankButton);
+        VBox rightBox = new VBox(20, viewBlankStockButton, modifyCustomerButton, modifyCurrencyConversionButton, modifyCommissionButton, assignBlankButton);
         rightBox.setAlignment(Pos.CENTER);
 
         // Create a container to hold the two containers

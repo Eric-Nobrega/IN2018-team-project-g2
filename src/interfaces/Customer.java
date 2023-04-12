@@ -3,21 +3,21 @@ package interfaces;
 public class Customer {
     private int customerId;
     private String customerName;
-    private int customerPhoneNumber;
+    private int CustomerphoneNumber;
     private String customerEmail;
     private String cardNumber;
     private int cvv;
-    private String customerRelationship;
+    private String Relationship;
     private int travelAgentId;
 
     public Customer(int customerId, String customerName, int customerPhoneNumber, String customerEmail, String cardNumber, int cvv, String customerRelationship, int travelAgentId) {
         this.customerId = customerId;
         this.customerName = customerName;
-        this.customerPhoneNumber = customerPhoneNumber;
+        this.CustomerphoneNumber = customerPhoneNumber;
         this.customerEmail = customerEmail;
         this.cardNumber = cardNumber;
         this.cvv = cvv;
-        this.customerRelationship = customerRelationship;
+        this.Relationship = customerRelationship;
         this.travelAgentId = travelAgentId;
     }
 
@@ -29,8 +29,8 @@ public class Customer {
         return customerName;
     }
 
-    public int getCustomerPhoneNumber() {
-        return customerPhoneNumber;
+    public int getCustomerphoneNumber() {
+        return CustomerphoneNumber;
     }
 
     public String getCustomerEmail() {
@@ -45,8 +45,8 @@ public class Customer {
         return cvv;
     }
 
-    public String getCustomerRelationship() {
-        return customerRelationship;
+    public String getRelationship() {
+        return Relationship;
     }
 
     public int getTravelAgentId() {

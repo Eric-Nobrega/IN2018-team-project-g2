@@ -2,11 +2,11 @@ package interfaces;
 
 public class Blank {
     private long id;
-    private String TYPE;
+    private String blankType;
 
     public Blank(long id,  String blankType) {
         this.id = id;
-        this.TYPE = blankType;
+        this.blankType = blankType;
     }
 
     public Blank() {
@@ -21,11 +21,11 @@ public class Blank {
         this.id = id;
     }
 
-    public String getTYPE() {
-        return TYPE;
+    public String getBlankType() {
+        return blankType;
     }
 
-    public void setTYPE(String TYPE) {
-        this.TYPE = TYPE;
+    public void setBlankType(String blankType) {
+        this.blankType = blankType;
     }
 }

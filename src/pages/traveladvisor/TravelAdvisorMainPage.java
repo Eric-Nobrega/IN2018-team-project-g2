@@ -40,6 +40,12 @@ public class TravelAdvisorMainPage extends BorderPane {
         stage.setScene(scene);
         });
 
+        viewCustomerDetailsButton.setOnAction(event -> {
+            TravelAdvisorViewCustomerDetails travelAdvisorViewOwnBlankStock = new TravelAdvisorViewCustomerDetails(stage);
+            Scene scene = new Scene(travelAdvisorViewOwnBlankStock, 850, 500);
+            stage.setScene(scene);
+        });
+
         recordSaleButton.setOnAction(event -> {
             TravelAdvisorRecordSale travelAdvisorRecordSale = new TravelAdvisorRecordSale(stage);
             Scene scene = new Scene(travelAdvisorRecordSale, 850, 500);

@@ -59,7 +59,7 @@ public class SystemAdministratorViewBlankStock extends BorderPane {
         // Define quantity column
         TableColumn<Blank, Integer> quantityColumn = new TableColumn<>("Quantity");
         quantityColumn.setCellValueFactory(cellData -> {
-            String blankType = cellData.getValue().getTYPE();
+            String blankType = cellData.getValue().getBlankType();
             int quantity = getBlankTypeQuantity(blankType);
             return new SimpleIntegerProperty(quantity).asObject();
         });

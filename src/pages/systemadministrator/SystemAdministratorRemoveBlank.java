@@ -19,11 +19,11 @@ import java.sql.SQLException;
 import static dbfuncs.DBMethods.getAllBlanksCodes;
 import static dbfuncs.DBMethods.getAllTravelAgents;
 
-public class SystemAdministratorAddBlank extends BorderPane {
+public class SystemAdministratorRemoveBlank extends BorderPane {
 
-    public SystemAdministratorAddBlank(Stage stage) {
+    public SystemAdministratorRemoveBlank(Stage stage) {
         // Create Title Text
-        Label pageTitle = new Label("Add Blanks");
+        Label pageTitle = new Label("Remove Blanks");
         pageTitle.setFont(Font.font("Verdana", FontWeight.BOLD, 36));
         pageTitle.setUnderline(true);
         pageTitle.setTextAlignment(TextAlignment.CENTER);
@@ -40,8 +40,7 @@ public class SystemAdministratorAddBlank extends BorderPane {
 
         // Create Labels
         Label blankTypeLabel = new Label("Blank Type: ");
-        Label amountReceivedLabel = new Label("Amount Received: ");
-        Label dateReceivedLabel = new Label("Date Received: ");
+        Label amountReceivedLabel = new Label("Amount To Remove: ");
         Label travelAgentsLabel = new Label("Travel Agent: ");
 
         // Create TextFields
@@ -76,19 +75,18 @@ public class SystemAdministratorAddBlank extends BorderPane {
         }
 
         // Create Add Blanks Button
-        Button addBlanksButton = new Button("Add Blanks");
+        Button removeBlanksButton = new Button("Remove Blanks");
 
         // Add Blanks Button Logic
-        addBlanksButton.setOnAction(event -> {
+        removeBlanksButton.setOnAction(event -> {
             String blankType = blankTypeField.getValue();
-            int amountReceived = Integer.parseInt(amountReceivedField.getText());
-            String dateReceived = String.valueOf(dateReceivedField.getValue());
+            int amountToRemove = Integer.parseInt(amountReceivedField.getText());
             int travelAgentID = DBMethods.getTravelAgentIDByName(travelAgents.getValue());
 
             // Add the new blanks to the database
-            boolean success = DBMethods.addBlanks(blankType, dateReceived, amountReceived, travelAgentID);
+            boolean success = DBMethods.removeBlanks(blankType, amountToRemove, travelAgentID);
             if (success) {
-                System.out.println("Blanks added!");
+                System.out.println("Blanks Removed!");
             } else {
                 System.out.println("Error!");
             }
@@ -103,15 +101,11 @@ public class SystemAdministratorAddBlank extends BorderPane {
         amountReceivedBox.setAlignment(Pos.CENTER);
 
         // Create Horizontal Box for Date Received Input
-        HBox dateReceivedBox = new HBox(10, dateReceivedLabel, dateReceivedField);
-        dateReceivedBox.setAlignment(Pos.CENTER);
-
-        // Create Horizontal Box for Date Received Input
         HBox travelAgentBox = new HBox(10, travelAgentsLabel, travelAgents);
         travelAgentBox.setAlignment(Pos.CENTER);
 
         // Create Vertical Box for Inputs and Add Blanks Button
-        VBox addBlanksBox = new VBox(20, blankTypeBox, amountReceivedBox, dateReceivedBox, travelAgentBox, addBlanksButton);
+        VBox addBlanksBox = new VBox(20, blankTypeBox, amountReceivedBox, travelAgentBox, removeBlanksButton);
         addBlanksBox.setAlignment(Pos.CENTER);
 
         BorderPane.setMargin(pageTitle, new Insets(65));

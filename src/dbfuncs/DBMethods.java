@@ -5,6 +5,7 @@ import interfaces.ExchangeRate;
 import interfaces.TravelAgent;
 import interfaces.User;
 import java.sql.*;
+import java.time.LocalDate;
 
 public class DBMethods {
     public static int userID;
@@ -102,7 +103,7 @@ public class DBMethods {
     public static boolean addUser(String username, String password, String role, String name) {
 
         // SQL query to insert new user
-        String query = "INSERT INTO USER (UserName, PASSWORD, Role, Name) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO USER (UserName, PASSWORD, Role) VALUES (?, ?, ?)";
 
         try {
             // establish database connection
@@ -113,7 +114,7 @@ public class DBMethods {
             statement.setString(1, username);
             statement.setString(2, password);
             statement.setString(3, role);
-            statement.setString(4, name);
+         //   statement.setString(4, name);
 
             // execute query
             int rowsInserted = statement.executeUpdate();
@@ -282,8 +283,8 @@ public class DBMethods {
     }
 
     public static boolean updateTravelAgent(String fullname, String address, String phonenumber) {
-
-        String query = "UPDATE `Travel Agent`  SET FullName = ?, Address = ?, PhoneNumber = ? WHERE FullName = ?";
+        String query = "INSERT INTO `Travel Agent` (FullName, Address, PhoneNumber) VALUES (?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE Address = VALUES(Address), PhoneNumber = VALUES(PhoneNumber)";
 
         try {
             // establish database connection
@@ -294,7 +295,6 @@ public class DBMethods {
             statement.setString(1, fullname);
             statement.setString(2, address);
             statement.setString(3, phonenumber);
-            statement.setString(4, fullname);
 
             // execute query
             int rowsUpdated = statement.executeUpdate();
@@ -307,6 +307,112 @@ public class DBMethods {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public static ResultSet getAllTravelAgents(){
+        String sql2 = "SELECT * FROM `Travel Agent`";
+
+        // establish database connection
+        Connection databaseConnection = connectToDB();
+
+        try {
+            // create prepared statement for SQL query
+            PreparedStatement stmt2 = databaseConnection.prepareStatement(sql2);
+            ResultSet rs2 = stmt2.executeQuery();
+
+            return rs2;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static ResultSet getAllBlanksCodes(){
+        String sql2 = "SELECT * FROM BlankCodes";
+
+        // establish database connection
+        Connection databaseConnection = connectToDB();
+
+        try {
+            // create prepared statement for SQL query
+            PreparedStatement stmt2 = databaseConnection.prepareStatement(sql2);
+            ResultSet rs2 = stmt2.executeQuery();
+
+            return rs2;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static ResultSet getAllCustomers(){
+        String sql2 = "SELECT * FROM Customer";
+
+        // establish database connection
+        Connection databaseConnection = connectToDB();
+
+        try {
+            // create prepared statement for SQL query
+            PreparedStatement stmt2 = databaseConnection.prepareStatement(sql2);
+            ResultSet rs2 = stmt2.executeQuery();
+
+            return rs2;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static ResultSet getAllTravelAdvisors(){
+        String sql2 = "SELECT * FROM `Travel Advisor`";
+
+        // establish database connection
+        Connection databaseConnection = connectToDB();
+
+        try {
+            // create prepared statement for SQL query
+            PreparedStatement stmt2 = databaseConnection.prepareStatement(sql2);
+            ResultSet rs2 = stmt2.executeQuery();
+
+            return rs2;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static int getTravelAgentIDByName(String travelAgentName){
+        String sql = "SELECT `AgentID` FROM `Travel Agent` WHERE `FullName` = ?";
+
+        // establish database connection
+        Connection databaseConnection = connectToDB();
+
+        try {
+            // create prepared statement for SQL query
+            PreparedStatement statement = databaseConnection.prepareStatement(sql);
+            statement.setString(1, travelAgentName);
+            ResultSet resultSet = statement.executeQuery();
+
+            // get the ID value from the ResultSet and return it
+            if (resultSet.next()) {
+                int travelAgentID = resultSet.getInt("AgentID");
+                return travelAgentID;
+            } else {
+                return -1; // return -1 if the travel agent name was not found
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1; // return -1 in case of any exception
+        } finally {
+            // close the database resources
+            try {
+                if (databaseConnection != null) {
+                    databaseConnection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -330,7 +436,7 @@ public class DBMethods {
 
     public static int getFixedRate() {
         // SQL query to retrieve fixed commission rate from the commission table
-        String query = "SELECT rate FROM Commision WHERE type = 'fixed'";
+        String query = "SELECT rate FROM Discount WHERE type = 'fixed'";
 
         try {
             // establish database connection
@@ -363,7 +469,7 @@ public class DBMethods {
 
     public static int getVariableRate() {
         // SQL query to retrieve variable commission rate from the commission table
-        String query = "SELECT rate FROM Commision WHERE type = 'variable'";
+        String query = "SELECT rate FROM Discount WHERE type = 'variable'";
 
         try {
             // establish database connection
@@ -394,28 +500,28 @@ public class DBMethods {
         }
     }
 
-    public static void updateCommissionRate(String type, int rate) {
+    public static void updateDiscountRate(String type, int rate) {
 
         try {
             // establish database connection
             Connection databaseConnection = connectToDB();
 
             // check if row exists
-            String query = "SELECT * FROM Commision WHERE type = ?";
+            String query = "SELECT * FROM Discount WHERE type = ?";
             PreparedStatement checkStatement = databaseConnection.prepareStatement(query);
             checkStatement.setString(1, type);
             ResultSet checkRs = checkStatement.executeQuery();
 
             // if row exists, update rate
             if (checkRs.next()) {
-                query = "UPDATE Commision SET rate = ? WHERE type = ?";
+                query = "UPDATE Discount SET rate = ? WHERE type = ?";
                 PreparedStatement updateStatement = databaseConnection.prepareStatement(query);
                 updateStatement.setInt(1, rate);
                 updateStatement.setString(2, type);
                 updateStatement.executeUpdate();
                 updateStatement.close();
             } else { // if row doesn't exist, create new row
-                query = "INSERT INTO Commision (type, rate) VALUES (?, ?)";
+                query = "INSERT INTO Discount (type, rate) VALUES (?, ?)";
                 PreparedStatement insertStatement = databaseConnection.prepareStatement(query);
                 insertStatement.setString(1, type);
                 insertStatement.setInt(2, rate);
@@ -434,9 +540,9 @@ public class DBMethods {
         }
     }
 
-    public static int getCommissionRowCount(String type) throws SQLException {
+    public static int getDiscountRowCount(String type) throws SQLException {
         // SQL query to retrieve count of rows with the specified commission type
-        String query = "SELECT COUNT(*) FROM Commision WHERE type = ?";
+        String query = "SELECT COUNT(*) FROM Discount WHERE type = ?";
         int count = 0;
 
         // establish database connection
@@ -462,9 +568,9 @@ public class DBMethods {
         return count;
     }
 
-    public static void createCommissionRate(String type, int rate) throws SQLException {
+    public static void createDiscountRate(String type, int rate) throws SQLException {
         // SQL query to create a new commission rate row
-        String query = "INSERT INTO Commision (type, rate) VALUES (?, ?)";
+        String query = "INSERT INTO Discount (type, rate) VALUES (?, ?)";
 
         // establish database connection
         try (Connection databaseConnection = connectToDB();
@@ -612,20 +718,42 @@ public class DBMethods {
         }
     }
 
-    public static void updateExchangeRate(String currencyName, double newRate) {
-        // SQL query to update exchange rate
-        String query = "UPDATE ExchangeRate SET AmountUSD = ? WHERE CurrencyName = ?";
+    public static void updateExchangeRate(String currencyName, int newRate) {
+        // SQL query to update or insert exchange rate
+        String querySelect = "SELECT COUNT(*) FROM ExchangeRate WHERE CurrencyName = ?";
+        String queryUpdate = "UPDATE ExchangeRate SET AmountUSD = ? WHERE CurrencyName = ?";
+        String queryInsert = "INSERT INTO ExchangeRate (CurrencyName, AmountUSD) VALUES (?, ?)";
 
         try {
             // establish database connection
             Connection databaseConnection = connectToDB();
 
-            // create prepared statement for SQL query
-            PreparedStatement statement = databaseConnection.prepareStatement(query);
-            statement.setDouble(1, newRate);
-            statement.setString(2, currencyName);
+            // create prepared statement for select query
+            PreparedStatement statementSelect = databaseConnection.prepareStatement(querySelect);
+            statementSelect.setString(1, currencyName);
 
-            // execute update query
+            // execute select query
+            ResultSet rs = statementSelect.executeQuery();
+            rs.next();
+            int rowCount = rs.getInt(1);
+
+            // close select statement and result set
+            rs.close();
+            statementSelect.close();
+
+            // create prepared statement for update or insert query
+            PreparedStatement statement;
+            if (rowCount > 0) {
+                statement = databaseConnection.prepareStatement(queryUpdate);
+                statement.setDouble(1, newRate);
+                statement.setString(2, currencyName);
+            } else {
+                statement = databaseConnection.prepareStatement(queryInsert);
+                statement.setString(1, currencyName);
+                statement.setDouble(2, newRate);
+            }
+
+            // execute update or insert query
             statement.executeUpdate();
 
             // close database resources
@@ -639,40 +767,24 @@ public class DBMethods {
         }
     }
 
-    public static boolean applyDiscount(String customerName, String fixedDiscount, String flexibleDiscount) {
-        String query = "UPDATE Customer SET FixedDiscount=?, FlexibleDiscount=? WHERE CustomerName=?";
-        try {
-            // establish database connection
-            Connection databaseConnection = connectToDB();
-
-            // prepare the update statement
-            PreparedStatement statement = databaseConnection.prepareStatement(query);
-            statement.setString(1, fixedDiscount);
-            statement.setString(2, flexibleDiscount);
-            statement.setString(3, customerName);
-
-            // execute the update and return true if successful
-            int rowsAffected = statement.executeUpdate();
-
-            // close database resources
-            statement.close();
-            databaseConnection.close();
-
-            if (rowsAffected > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+    public static boolean modifyCommissionRate(int newCommissionRate) {
+        try (Connection connection = connectToDB();
+             PreparedStatement statement = connection.prepareStatement(
+                     "INSERT INTO Commision (Rate, DateSet) VALUES (?, ?)")) {
+            statement.setInt(1, newCommissionRate);
+            statement.setDate(2, java.sql.Date.valueOf(LocalDate.now()));
+            int rowsInserted = statement.executeUpdate();
+            return rowsInserted > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
             return false;
         }
     }
 
-    public static boolean addBlanks(String blankType, String dateReceived, int amountReceived){
+    public static boolean addBlanks(String blankType, String dateReceived, int amountReceived, int agentID) {
 
         // SQL query to insert new blank
-        String query = "INSERT INTO BlanksTB (SerialNumber, TYPE, isValid, isVoid, isAssigned, DateReceived) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO BlanksTB (SerialNumber, TYPE, isValid, isVoid, isAssigned, DateReceived, TravelAgentID) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try {
             // establish database connection
@@ -681,16 +793,29 @@ public class DBMethods {
             // create prepared statement for SQL query
             PreparedStatement statement = databaseConnection.prepareStatement(query);
 
+            // query the database to get the highest serial number for the given blank type
+            String maxSerialNumberQuery = "SELECT MAX(SUBSTR(SerialNumber, LENGTH(?)+1)) AS max_serial_number FROM BlanksTB WHERE TYPE = ?";
+            PreparedStatement maxSerialNumberStatement = databaseConnection.prepareStatement(maxSerialNumberQuery);
+            maxSerialNumberStatement.setString(1, blankType);
+            maxSerialNumberStatement.setString(2, blankType);
+            ResultSet rs = maxSerialNumberStatement.executeQuery();
+
             // generate and set serial number for each blank
-            int sequenceNumber = 1;
+            int sequenceNumber;
+            if (rs.next() && rs.getString("max_serial_number") != null) {
+                sequenceNumber = Integer.parseInt(rs.getString("max_serial_number")) + 1;
+            } else {
+                sequenceNumber = 1;
+            }
             for (int i = 0; i < amountReceived; i++) {
                 String serialNumber = String.format("%s%08d", blankType, sequenceNumber);
-                statement.setString(1, String.valueOf(serialNumber));
+                statement.setString(1, serialNumber);
                 statement.setString(2, blankType);
                 statement.setString(3, String.valueOf(false));
                 statement.setString(4, String.valueOf(false));
                 statement.setString(5, String.valueOf(false));
                 statement.setString(6, dateReceived);
+                statement.setString(7, String.valueOf(agentID));
                 statement.addBatch();
                 sequenceNumber++;
             }
@@ -698,7 +823,9 @@ public class DBMethods {
             // execute batch insert
             int[] rowsInserted = statement.executeBatch();
 
-            // close database resources
+            // close resources
+            rs.close();
+            maxSerialNumberStatement.close();
             statement.close();
             databaseConnection.close();
 
@@ -709,7 +836,34 @@ public class DBMethods {
         }
     }
 
-    public static ResultSet getAllBlanks() {
+    public static boolean removeBlanks(String blankCode, int amountToRemove, int travelAgentId) {
+        String query = "DELETE FROM BlanksTB WHERE TYPE = ? AND `TravelAgentId` = ? AND isAssigned = ? LIMIT ?";
+
+        try {
+            Connection databaseConnection = connectToDB();
+            PreparedStatement statement = databaseConnection.prepareStatement(query);
+            statement.setString(1, blankCode);
+            statement.setInt(2, travelAgentId);
+            statement.setBoolean(3, false);
+            statement.setInt(4, amountToRemove);
+
+            int rowsDeleted = statement.executeUpdate();
+            statement.close();
+            databaseConnection.close();
+
+            if (rowsDeleted >= amountToRemove) {
+                return true;
+            } else {
+                System.out.println("Error: Not enough blank rows to delete.");
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+        public static ResultSet getAllBlanks() {
 
         // SQL query to retrieve all user names
         String query = "SELECT * FROM BlanksTB";
@@ -805,6 +959,31 @@ public class DBMethods {
         }
     }
 
+    public static int getTravelAdvisorID(){
+        String query = "SELECT TravelAdvisorId FROM USER WHERE UserId = ?";
+
+        // establish database connection
+        Connection databaseConnection = connectToDB();
+
+        try {
+            // create prepared statement for SQL query
+            PreparedStatement statement = databaseConnection.prepareStatement(query);
+            statement.setString(1, String.valueOf(userID));
+            ResultSet resultSet = statement.executeQuery();
+
+            // get the ID value from the ResultSet and return it
+            if (resultSet.next()) {
+                int travelAgentID = resultSet.getInt("TravelAdvisorId");
+                return travelAgentID;
+            } else {
+                return -1; // return -1 if the travel agent name was not found
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1; // return -1 in case of any exception
+        }
+    }
+
     public static void recordSale(String customerName, String customerAddress, String customerEmail, String customerPhoneNumber, String date, String destination, String payNowOrLater, String paymentMethod, String currencyName, int priceAmount, String cardNumber, String cardCVV, String discountGiven) {
 
         try {
@@ -834,33 +1013,82 @@ public class DBMethods {
             }
 
             // Insert data into the sale table
-            String saleSql = "INSERT INTO Sale (id, CustomerName, isPayNow, Amount, isCash, isCard, isDomestic, isInterline, Currency, Date, DiscountApplied) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String saleSql = "INSERT INTO Sale (CustomerName, isPayNow, Amount, isCash, isCard, isDomestic, isInterline, Currency, Date, DiscountApplied, `Travel AdvisorAdvisorId`,`Customer_CustomerId`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)";
             PreparedStatement saleStmt = conn.prepareStatement(saleSql);
-            saleStmt.setInt(1, customerId);
-            saleStmt.setString(2, customerName);
-            saleStmt.setString(3, payNowOrLater);
-            saleStmt.setInt(4, priceAmount);
+            saleStmt.setString(1, customerName);
+            saleStmt.setString(2, payNowOrLater);
+            saleStmt.setInt(3, priceAmount);
             if (paymentMethod.equalsIgnoreCase("cash")) {
-                saleStmt.setInt(5, 1);
-                saleStmt.setInt(6, 0);
-            } else {
+                saleStmt.setInt(4, 1);
                 saleStmt.setInt(5, 0);
-                saleStmt.setInt(6, 1);
+            } else {
+                saleStmt.setInt(4, 0);
+                saleStmt.setInt(5, 1);
             }
             if (destination.equalsIgnoreCase("domestic")) {
-                saleStmt.setInt(7, 1);
-                saleStmt.setInt(8, 0);
-            } else {
+                saleStmt.setInt(6,1);
                 saleStmt.setInt(7, 0);
-                saleStmt.setInt(8, 1);
+            } else {
+                saleStmt.setInt(6, 0);
+                saleStmt.setInt(7, 1);
             }
-            saleStmt.setString(9, currencyName);
-            saleStmt.setString(10, date);
-            saleStmt.setString(11, discountGiven);
+            saleStmt.setString(8, currencyName);
+            saleStmt.setString(9, date);
+            saleStmt.setString(10,discountGiven);
+            saleStmt.setString(11, String.valueOf(getTravelAdvisorID()));
+            saleStmt.setString(12, String.valueOf(customerId));
             saleStmt.executeUpdate();
 
             // Close the database connection
             conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void addBlankCode(String newBlankCode) throws SQLException {
+        String query = "SELECT * FROM BlankCodes WHERE BlankCode = ?";
+        PreparedStatement statement = connectToDB().prepareStatement(query);
+        statement.setString(1, newBlankCode);
+        ResultSet result = statement.executeQuery();
+        if (result.next()) {
+            // The blank code already exists, so return an error
+            throw new SQLException("Blank code already exists");
+        } else {
+            // The blank code doesn't exist, so add a new row to the table
+            String insertQuery = "INSERT INTO BlankCodes (BlankCode) VALUES (?)";
+            PreparedStatement insertStatement = connectToDB().prepareStatement(insertQuery);
+            insertStatement.setString(1, newBlankCode);
+            insertStatement.executeUpdate();
+    };
+
+ //   public static void removeBlankCode(){};
+//    public static ResultSet getAllBlankCodes(){};
+}
+
+    public static void removeBlankCode(String codeToRemove) {
+        // create a connection to the database
+        Connection connection = connectToDB();
+
+        try {
+            // check if the code exists in the table
+            String query = "SELECT * FROM BlankCodes WHERE BlankCode = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, codeToRemove);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                // if the code exists, remove the corresponding row from the table
+                query = "DELETE FROM BlankCodes WHERE BlankCode = ?";
+                statement = connection.prepareStatement(query);
+                statement.setString(1, codeToRemove);
+                statement.executeUpdate();
+                System.out.println("Code removed successfully");
+            } else {
+                // if the code doesn't exist, return an error message
+                System.out.println("Error: code not found");
+            }
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

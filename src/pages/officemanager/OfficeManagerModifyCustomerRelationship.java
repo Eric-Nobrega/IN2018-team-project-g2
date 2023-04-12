@@ -49,7 +49,7 @@ public class OfficeManagerModifyCustomerRelationship extends BorderPane {
                 Customer customer = DBMethods.getCustomerByName(customerName);
                 if (customer != null) {
                     fullNameField.setText(customer.getCustomerName());
-                    relationshipField.setText(customer.getCustomerRelationship());
+                    relationshipField.setText(customer.getRelationship());
                 } else {
                     // display error message
                     Alert alert = new Alert(Alert.AlertType.ERROR, "Customer not found.");

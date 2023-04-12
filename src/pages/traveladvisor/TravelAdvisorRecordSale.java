@@ -10,6 +10,11 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import pages.traveladvisor.TravelAdvisorMainPage;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import static dbfuncs.DBMethods.*;
+
 public class TravelAdvisorRecordSale extends BorderPane {
 
     public TravelAdvisorRecordSale(Stage stage) {
@@ -60,8 +65,20 @@ public class TravelAdvisorRecordSale extends BorderPane {
         paymentMethodField.getItems().addAll("Cash", "Card");
         paymentMethodField.setValue("Cash");
 
-        TextField currencyField = new TextField();
-        currencyField.setPromptText("Currency");
+        ChoiceBox<String> currencyField = new ChoiceBox<>();
+
+        // call the getAllTravelAgents method to retrieve the ResultSet
+        ResultSet rs = getAllExchangeRates();
+
+        try {
+            // iterate over the ResultSet and add each FullName value to the ComboBox
+            while (rs.next()) {
+                String fullName = rs.getString("CurrencyName") ;
+                currencyField.getItems().add(fullName);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         TextField priceField = new TextField();
         priceField.setPromptText("Price");
@@ -75,6 +92,10 @@ public class TravelAdvisorRecordSale extends BorderPane {
         TextField discountField = new TextField();
         discountField.setPromptText("Discount");
 
+        ChoiceBox<String> customerType = new ChoiceBox<>();
+        customerType.getItems().addAll("Valued", "Regular");
+        customerType.setValue("Regular");
+
         // Create Submit Button
         Button submitButton = new Button("Record Sale");
         submitButton.setOnAction(event -> {
@@ -87,7 +108,7 @@ public class TravelAdvisorRecordSale extends BorderPane {
             String destination = destinationField.getValue();
             String payNowOrLater = payField.getValue();
             String paymentMethod = paymentMethodField.getValue();
-            String currencyName = currencyField.getText();
+            String currencyName = currencyField.getValue();
             int priceAmount = Integer.parseInt(priceField.getText());
             String cardNumber = cardNumberField.getText();
             String cardCVV = cvvField.getText();
@@ -149,6 +170,9 @@ public class TravelAdvisorRecordSale extends BorderPane {
 
         rightFormGridPane.add(new Label("Discount:"), 0, 6);
         rightFormGridPane.add(discountField, 1, 6);
+
+        rightFormGridPane.add(new Label("Customer Relationship:"), 0, 7);
+        rightFormGridPane.add(customerType, 1, 7);
 
         rightFormGridPane.add(submitButton, 2, 6);
 
