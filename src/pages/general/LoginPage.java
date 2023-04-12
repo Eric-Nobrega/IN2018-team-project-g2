@@ -32,7 +32,7 @@ public class LoginPage {
 
         // Create Title Text
         Label airViaLabel = new Label("AirVia LTD Demo Software");
-        airViaLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 36));
+        airViaLabel.setFont(Font.font("Karla", FontWeight.BOLD, 36));
 
         // Create Input Field Labels
         Label usernameLabel = new Label("Username:");

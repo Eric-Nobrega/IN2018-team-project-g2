@@ -20,14 +20,14 @@ public class OfficeManagerMainPage extends BorderPane {
     public OfficeManagerMainPage(Stage stage) {
         // Create Title Text
         Label pageTitle = new Label("Office Manager Homepage");
-        pageTitle.setFont(Font.font("Verdana", FontWeight.BOLD, 36));
+        pageTitle.setFont(Font.font("Karla", FontWeight.BOLD, 36));
         pageTitle.setUnderline(true);
         pageTitle.setTextAlignment(TextAlignment.CENTER);
 
         // Create Functionality Buttons
-        Button createReport1Button = new Button("Create Report 1");
-        Button createReport2Button = new Button("Create Report 2");
-        Button createReport3Button = new Button("Create Report 3");
+        Button createReport1Button = new Button("Generate Ticket Stock Turnover Report");
+        Button createReport2Button = new Button("Generate Interline Sales Report");
+        Button createReport3Button = new Button("Generate Domestic Sales Report");
         Button viewCurrencyConversionButton = new Button("View Currency Conversion Rate");
         Button viewBlankStockButton = new Button("View Total Blank Stock");
         Button modifyCurrencyConversionButton = new Button("Modify/Set Currency Conversion Rate");
@@ -91,8 +91,8 @@ public class OfficeManagerMainPage extends BorderPane {
         });
 
         reAssignBlankButton.setOnAction(event -> {
-            OfficeManagerModifyCommissionRates setDiscountRate = new OfficeManagerModifyCommissionRates(stage);
-            Scene scene = new Scene(setDiscountRate, 850, 500);
+            OfficeManagerReassignBlanks reassignBlanks = new OfficeManagerReassignBlanks(stage);
+            Scene scene = new Scene(reassignBlanks, 850, 500);
             stage.setScene(scene);
         });
 
@@ -112,7 +112,7 @@ public class OfficeManagerMainPage extends BorderPane {
         // Create two containers to hold the buttons
         VBox leftBox = new VBox(20, createReport1Button, createReport2Button, createReport3Button, viewCurrencyConversionButton, setCustomerDiscountButton);
         leftBox.setAlignment(Pos.CENTER);
-        VBox rightBox = new VBox(20, viewBlankStockButton, modifyCustomerButton, modifyCurrencyConversionButton, modifyCommissionButton, assignBlankButton);
+        VBox rightBox = new VBox(20, viewBlankStockButton, modifyCustomerButton, modifyCurrencyConversionButton, modifyCommissionButton, assignBlankButton, reAssignBlankButton);
         rightBox.setAlignment(Pos.CENTER);
 
         // Create a container to hold the two containers

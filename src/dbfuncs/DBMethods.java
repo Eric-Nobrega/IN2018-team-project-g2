@@ -6,6 +6,7 @@ import interfaces.TravelAgent;
 import interfaces.User;
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 public class DBMethods {
     public static int userID;
@@ -114,7 +115,7 @@ public class DBMethods {
             statement.setString(1, username);
             statement.setString(2, password);
             statement.setString(3, role);
-         //   statement.setString(4, name);
+            //   statement.setString(4, name);
 
             // execute query
             int rowsInserted = statement.executeUpdate();
@@ -310,7 +311,7 @@ public class DBMethods {
         }
     }
 
-    public static ResultSet getAllTravelAgents(){
+    public static ResultSet getAllTravelAgents() {
         String sql2 = "SELECT * FROM `Travel Agent`";
 
         // establish database connection
@@ -328,7 +329,7 @@ public class DBMethods {
         }
     }
 
-    public static ResultSet getAllBlanksCodes(){
+    public static ResultSet getAllBlanksCodes() {
         String sql2 = "SELECT * FROM BlankCodes";
 
         // establish database connection
@@ -346,7 +347,7 @@ public class DBMethods {
         }
     }
 
-    public static ResultSet getAllCustomers(){
+    public static ResultSet getAllCustomers() {
         String sql2 = "SELECT * FROM Customer";
 
         // establish database connection
@@ -364,7 +365,7 @@ public class DBMethods {
         }
     }
 
-    public static ResultSet getAllTravelAdvisors(){
+    public static ResultSet getAllTravelAdvisors() {
         String sql2 = "SELECT * FROM `Travel Advisor`";
 
         // establish database connection
@@ -382,7 +383,7 @@ public class DBMethods {
         }
     }
 
-    public static int getTravelAgentIDByName(String travelAgentName){
+    public static int getTravelAgentIDByName(String travelAgentName) {
         String sql = "SELECT `AgentID` FROM `Travel Agent` WHERE `FullName` = ?";
 
         // establish database connection
@@ -417,7 +418,7 @@ public class DBMethods {
     }
 
     public static ResultSet getBlanksByAdvisorID() {
-        String sql2 = "SELECT Type, COUNT(*) AS qty FROM BlanksTB WHERE `Travel AdvisorAdvisorId` = 1 GROUP BY Type;";
+        String sql2 = "SELECT Type, COUNT(*) AS qty FROM BlanksTB WHERE `Travel AdvisorAdvisorId` = 1 AND isValid = ? GROUP BY Type;";
 
         // establish database connection
         Connection databaseConnection = connectToDB();
@@ -425,6 +426,7 @@ public class DBMethods {
         try {
             // create prepared statement for SQL query
             PreparedStatement stmt2 = databaseConnection.prepareStatement(sql2);
+            stmt2.setString(1, "false");
             ResultSet rs2 = stmt2.executeQuery();
 
             return rs2;
@@ -863,7 +865,7 @@ public class DBMethods {
         }
     }
 
-        public static ResultSet getAllBlanks() {
+    public static ResultSet getAllBlanks() {
 
         // SQL query to retrieve all user names
         String query = "SELECT * FROM BlanksTB";
@@ -900,6 +902,7 @@ public class DBMethods {
             return null;
         }
     }
+
     public static void assignBlanks(String blankType, String advisorName, int amount) {
         try {
             // Connect to the database
@@ -959,7 +962,94 @@ public class DBMethods {
         }
     }
 
-    public static int getTravelAdvisorID(){
+    public static void reassignBlanks(String blankType, String currentAdvisorName, String newAdvisorName, int amount) throws SQLException {
+        try {
+            // Connect to the database
+            Connection conn = connectToDB();
+
+            // Get the IDs of the current and new advisors
+            String[] currentAdvisorNames = currentAdvisorName.split(" ");
+            String currentAdvisorFirstName = currentAdvisorNames[0];
+            String currentAdvisorLastName = currentAdvisorNames[1];
+
+            String[] newAdvisorNames = newAdvisorName.split(" ");
+            String newAdvisorFirstName = newAdvisorNames[0];
+            String newAdvisorLastName = newAdvisorNames[1];
+
+            String getCurrentAdvisorIdQuery = "SELECT AdvisorId FROM `Travel Advisor` WHERE AdvisorFirstName=? AND AdvisorLastName=?";
+            PreparedStatement getCurrentAdvisorIdStmt = conn.prepareStatement(getCurrentAdvisorIdQuery);
+            getCurrentAdvisorIdStmt.setString(1, currentAdvisorFirstName);
+            getCurrentAdvisorIdStmt.setString(2, currentAdvisorLastName);
+            ResultSet currentAdvisorIdRs = getCurrentAdvisorIdStmt.executeQuery();
+            currentAdvisorIdRs.next();
+            int currentAdvisorId = currentAdvisorIdRs.getInt("AdvisorId");
+
+            String getNewAdvisorIdQuery = "SELECT AdvisorId FROM `Travel Advisor` WHERE AdvisorFirstName=? AND AdvisorLastName=?";
+            PreparedStatement getNewAdvisorIdStmt = conn.prepareStatement(getNewAdvisorIdQuery);
+            getNewAdvisorIdStmt.setString(1, newAdvisorFirstName);
+            getNewAdvisorIdStmt.setString(2, newAdvisorLastName);
+            ResultSet newAdvisorIdRs = getNewAdvisorIdStmt.executeQuery();
+            newAdvisorIdRs.next();
+            int newAdvisorId = newAdvisorIdRs.getInt("AdvisorId");
+
+            // Select the required number of blank rows from the BlanksTB table that are currently assigned to the current advisor
+            String selectBlanksQuery = "SELECT SerialNumber FROM BlanksTB WHERE TYPE=? AND isAssigned=1 AND `Travel AdvisorAdvisorId`=? LIMIT ?";
+            PreparedStatement selectBlanksStmt = conn.prepareStatement(selectBlanksQuery);
+            selectBlanksStmt.setString(1, blankType);
+            selectBlanksStmt.setInt(2, currentAdvisorId);
+            selectBlanksStmt.setInt(3, amount);
+            ResultSet blankSerialNumbers = selectBlanksStmt.executeQuery();
+
+            // Update the Travel Advisor table with the ID of the new travel advisor
+            String updateTravelAdvisorQuery = "UPDATE `Travel Advisor` SET AdvisorId=? WHERE AdvisorFirstName=? AND AdvisorLastName=?";
+            PreparedStatement updateTravelAdvisorStmt = conn.prepareStatement(updateTravelAdvisorQuery);
+            updateTravelAdvisorStmt.setInt(1, newAdvisorId);
+            updateTravelAdvisorStmt.setString(2, newAdvisorFirstName);
+            updateTravelAdvisorStmt.setString(3, newAdvisorLastName);
+            updateTravelAdvisorStmt.executeUpdate();
+
+            // Mark the selected blanks as assigned to the new advisor
+            String markBlanksAssignedQuery = "UPDATE BlanksTB SET isAssigned=1, `Travel AdvisorAdvisorId`=? WHERE SerialNumber=?";
+            PreparedStatement markBlanksAssignedStmt = conn.prepareStatement(markBlanksAssignedQuery);
+            while (blankSerialNumbers.next()) {
+                String blankSerialNumber = blankSerialNumbers.getString("SerialNumber");
+                markBlanksAssignedStmt.setInt(1, newAdvisorId);
+                markBlanksAssignedStmt.setString(2, blankSerialNumber);
+                markBlanksAssignedStmt.executeUpdate();
+            }
+
+            // Close the database connection and statements
+            blankSerialNumbers.close();
+            currentAdvisorIdRs.close();
+            newAdvisorIdRs.close();
+            getCurrentAdvisorIdStmt.close();
+            getNewAdvisorIdStmt.close();
+            selectBlanksStmt.close();
+            updateTravelAdvisorStmt.close();
+            markBlanksAssignedStmt.close();
+// Close the database connection and statements
+            blankSerialNumbers.close();
+            currentAdvisorIdRs.close();
+            newAdvisorIdRs.close();
+            getCurrentAdvisorIdStmt.close();
+            getNewAdvisorIdStmt.close();
+            selectBlanksStmt.close();
+            updateTravelAdvisorStmt.close();
+            markBlanksAssignedStmt.close();
+
+// Log the success message
+            System.out.println(amount + " " + blankType + " blanks have been reassigned from " + currentAdvisorName + " to " + newAdvisorName + ".");
+
+        } catch (SQLException ex) {
+            System.out.println("An error occurred while reassigning the blanks: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+// Close the database connection
+            connectToDB().close();
+        }
+    }
+
+    public static int getTravelAdvisorID() {
         String query = "SELECT TravelAdvisorId FROM USER WHERE UserId = ?";
 
         // establish database connection
@@ -984,9 +1074,10 @@ public class DBMethods {
         }
     }
 
-    public static void recordSale(String customerName, String customerAddress, String customerEmail, String customerPhoneNumber, String date, String destination, String payNowOrLater, String paymentMethod, String currencyName, int priceAmount, String cardNumber, String cardCVV, String discountGiven) {
-
+    public static void recordSale(String customerName, String customerAddress, String customerEmail, String customerPhoneNumber, String date, String destination, String payNowOrLater, String paymentMethod, String currencyName, int priceAmount, String cardNumber, String cardCVV, String discountGiven, String blankType) {
+        System.out.println(blankType);
         try {
+            System.out.println(blankType);
             // Open a connection to the database
             Connection conn = connectToDB();
 
@@ -1012,8 +1103,38 @@ public class DBMethods {
                 }
             }
 
+            // INSERT DATA INTO TICKETS TABLE
+            // GET SMALLEST MIN SERIAL BLANK NUMBER, SO WE KNOW WHICH ONE TO SELL -> A VALID TICKET
+            String minSerialNumberQuery = "SELECT MIN(SUBSTR(SerialNumber, LENGTH(?) - 2)) AS min_serial_number FROM BlanksTB WHERE TYPE = ? AND isValid = ?";
+            PreparedStatement minSerialNumberStatement = connectToDB().prepareStatement(minSerialNumberQuery);
+            minSerialNumberStatement.setString(1, blankType);
+            minSerialNumberStatement.setString(2, blankType);
+            minSerialNumberStatement.setString(3, "false");
+            ResultSet rs = minSerialNumberStatement.executeQuery();
+
+            long minSequenceNumber;
+            if (rs.next() && rs.getString("min_serial_number") != null) {
+                String minSerialNumber = rs.getString("min_serial_number");
+                if (minSerialNumber.length() >= 10) {
+                    minSequenceNumber = Long.parseLong(minSerialNumber.substring(minSerialNumber.length() - 10)) + 1;
+                } else {
+                    minSequenceNumber = 1;
+                }
+            } else {
+                minSequenceNumber = 0;
+            }
+
+            System.out.println("SERIAL NUMBER: " + minSequenceNumber);
+
+            // UPDATE BLANK TO VALID
+            String blankSql = "UPDATE BlanksTB SET isValid = ? WHERE SerialNumber = ?";
+            PreparedStatement blankStmt = conn.prepareStatement(blankSql);
+            blankStmt.setString(1, "true");
+            blankStmt.setString(2, rs.getString("min_serial_number"));
+            blankStmt.executeUpdate();
+
             // Insert data into the sale table
-            String saleSql = "INSERT INTO Sale (CustomerName, isPayNow, Amount, isCash, isCard, isDomestic, isInterline, Currency, Date, DiscountApplied, `Travel AdvisorAdvisorId`,`Customer_CustomerId`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)";
+            String saleSql = "INSERT INTO Sale (CustomerName, isPayNow, Amount, isCash, isCard, isDomestic, isInterline, Currency, Date, DiscountApplied, `Travel AdvisorAdvisorId`,`Customer_CustomerId`, `BlankSerialNumber`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?)";
             PreparedStatement saleStmt = conn.prepareStatement(saleSql);
             saleStmt.setString(1, customerName);
             saleStmt.setString(2, payNowOrLater);
@@ -1026,7 +1147,7 @@ public class DBMethods {
                 saleStmt.setInt(5, 1);
             }
             if (destination.equalsIgnoreCase("domestic")) {
-                saleStmt.setInt(6,1);
+                saleStmt.setInt(6, 1);
                 saleStmt.setInt(7, 0);
             } else {
                 saleStmt.setInt(6, 0);
@@ -1034,10 +1155,22 @@ public class DBMethods {
             }
             saleStmt.setString(8, currencyName);
             saleStmt.setString(9, date);
-            saleStmt.setString(10,discountGiven);
+            saleStmt.setString(10, discountGiven);
             saleStmt.setString(11, String.valueOf(getTravelAdvisorID()));
             saleStmt.setString(12, String.valueOf(customerId));
+            saleStmt.setString(13, String.valueOf(minSequenceNumber));
             saleStmt.executeUpdate();
+
+            // Insert data into the tickets table
+            String ticketSql = "INSERT INTO Tickets (CustomerName, PaymentType, PaymentAmount, SaleDate, CustomerCustomerId, BlanksTBSerialNumber) VALUES (?, ?, ?, ?, ?, ?)";
+            PreparedStatement ticketStmt = conn.prepareStatement(ticketSql);
+            ticketStmt.setString(1, customerName);
+            ticketStmt.setString(2, paymentMethod);
+            ticketStmt.setInt(3, priceAmount);
+            ticketStmt.setString(4, date);
+            ticketStmt.setInt(5, customerId);
+            ticketStmt.setInt(6, (int) minSequenceNumber); // Assumes you have a method to find the lowest available blank serial number for a given type
+            ticketStmt.executeUpdate();
 
             // Close the database connection
             conn.close();
@@ -1060,11 +1193,12 @@ public class DBMethods {
             PreparedStatement insertStatement = connectToDB().prepareStatement(insertQuery);
             insertStatement.setString(1, newBlankCode);
             insertStatement.executeUpdate();
-    };
+        }
+        ;
 
- //   public static void removeBlankCode(){};
+        //   public static void removeBlankCode(){};
 //    public static ResultSet getAllBlankCodes(){};
-}
+    }
 
     public static void removeBlankCode(String codeToRemove) {
         // create a connection to the database
@@ -1093,5 +1227,122 @@ public class DBMethods {
             e.printStackTrace();
         }
     }
+
+    public static boolean isEnoughBlanksByAdvisorID(String blankCode, int advisorID) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        boolean result = false;
+
+        try {
+            conn = connectToDB();
+            String query = "SELECT COUNT(*) FROM BlanksTB WHERE TYPE = ? AND `Travel AdvisorAdvisorID` = ? AND isValid = ?";
+            stmt = conn.prepareStatement(query);
+            stmt.setString(1, blankCode);
+            stmt.setInt(2, advisorID);
+            stmt.setInt(3, 0);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                if (count > 1) {
+                    result = true;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+    public static ResultSet getAllTickets() {
+
+        // SQL query to retrieve all user names
+        String query = "SELECT * FROM Tickets WHERE isCancelled = 0";
+
+        try {
+            // establish database connection
+            Connection databaseConnection = connectToDB();
+
+            // create prepared statement for SQL query
+            PreparedStatement statement = databaseConnection.prepareStatement(query);
+
+            // execute query
+            ResultSet rs = statement.executeQuery();
+
+            return rs;
+        } catch (SQLException e) {
+            System.out.println("Error getting all exchange rates!");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void refundTicket(int ticketID) {
+        // SQL query to update the isCancelled column for the ticket with the given ticketID
+        String updateQuery = "UPDATE Tickets SET isCancelled = true WHERE TicketId = ?";
+
+        // SQL query to insert a row into the Refunds table
+        String insertQuery = "INSERT INTO Refund (Date, TicketID) VALUES (?, ?)";
+
+        try {
+            // establish database connection
+            Connection databaseConnection = connectToDB();
+
+            // create prepared statement for update query
+            PreparedStatement updateStatement = databaseConnection.prepareStatement(updateQuery);
+            updateStatement.setInt(1, ticketID);
+
+            // execute update query
+            int rowsAffected = updateStatement.executeUpdate();
+
+            if (rowsAffected == 1) {
+                System.out.println("Ticket with ID " + ticketID + " has been refunded.");
+
+                // create prepared statement for insert query
+                PreparedStatement insertStatement = databaseConnection.prepareStatement(insertQuery);
+
+                // set date to today's date
+                LocalDate currentDate = LocalDate.now();
+
+                // set date parameter
+                insertStatement.setString(1, String.valueOf(currentDate));
+
+                // set ticketID parameter
+                insertStatement.setInt(2, ticketID);
+
+                // execute insert query
+                rowsAffected = insertStatement.executeUpdate();
+
+                if (rowsAffected == 1) {
+                    System.out.println("Refund record has been added to the Refunds table.");
+                } else {
+                    System.out.println("Error: " + rowsAffected + " rows were affected by the refund record insertion query.");
+                }
+
+            } else {
+                System.out.println("Error: " + rowsAffected + " rows were affected by the refund query.");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error refunding ticket with ID " + ticketID + "!");
+            e.printStackTrace();
+        }
+    }
+
 
 }

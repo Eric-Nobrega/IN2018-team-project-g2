@@ -26,7 +26,7 @@ public class SystemAdministratorEditUserDetails extends BorderPane {
         public SystemAdministratorEditUserDetails(Stage stage) {
             // Create Title Text
             Label pageTitle = new Label("Edit User Details");
-            pageTitle.setFont(Font.font("Verdana", FontWeight.BOLD, 36));
+            pageTitle.setFont(Font.font("Karla", FontWeight.BOLD, 36));
             pageTitle.setUnderline(true);
             pageTitle.setTextAlignment(TextAlignment.CENTER);
 

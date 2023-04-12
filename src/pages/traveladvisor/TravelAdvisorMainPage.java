@@ -1,10 +1,10 @@
 package pages.traveladvisor;
 
+import dbfuncs.DBMethods;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -13,22 +13,56 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import pages.general.LoginPage;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import static dbfuncs.DBMethods.getAllBlanksCodes;
+
 public class TravelAdvisorMainPage extends BorderPane {
 
     public TravelAdvisorMainPage(Stage stage) {
         // Create Title Text
         Label pageTitle = new Label("Travel Advisor Homepage");
-        pageTitle.setFont(Font.font("Verdana", FontWeight.BOLD, 36));
+        pageTitle.setFont(Font.font("Karla", FontWeight.BLACK, 36));
         pageTitle.setUnderline(true);
         pageTitle.setTextAlignment(TextAlignment.CENTER);
 
         // Create Functionality Buttons
         Button generateSalesReportButton = new Button("Generate Sales Report");
         Button viewOwnBlankStockButton = new Button("View Blank Stock (Own)");
-        Button recordSaleButton = new Button("Record A Sale");
+        ComboBox<String> blankTypeField = new ComboBox<>();
+        blankTypeField.setPromptText("Record A Sale");
         Button recordRefundButton = new Button("Record A Refund");
         Button viewCustomerDetailsButton = new Button("View Customer Details");
         Button addNewCustomerDetailsButton = new Button("Add New Customer Details");
+
+        ResultSet rs2 = getAllBlanksCodes();
+
+        try {
+            // iterate over the ResultSet and add each FullName value to the ComboBox
+            while (rs2.next()) {
+                String blankCode = rs2.getString("BlankCode");
+                blankTypeField.getItems().add(blankCode);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        blankTypeField.setOnAction(event -> {
+            String selectedBlankCode = blankTypeField.getValue();
+            // Do something with the selected blank code
+            boolean isEnough = DBMethods.isEnoughBlanksByAdvisorID(selectedBlankCode, DBMethods.getTravelAdvisorID());
+
+            if(isEnough){
+                TravelAdvisorRecordSale travelAdvisorRecordSale = new TravelAdvisorRecordSale(stage, selectedBlankCode);
+                Scene scene = new Scene(travelAdvisorRecordSale, 850, 500);
+                stage.setScene(scene);
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Not enough blanks of type " + selectedBlankCode + " available.", ButtonType.OK);
+                alert.showAndWait();
+            }
+        });
+
 
         // Create Logout Button
         Button logoutButton = new Button("Logout");
@@ -46,9 +80,9 @@ public class TravelAdvisorMainPage extends BorderPane {
             stage.setScene(scene);
         });
 
-        recordSaleButton.setOnAction(event -> {
-            TravelAdvisorRecordSale travelAdvisorRecordSale = new TravelAdvisorRecordSale(stage);
-            Scene scene = new Scene(travelAdvisorRecordSale, 850, 500);
+        recordRefundButton.setOnAction(event -> {
+            TravelAdvisorRecordRefund travelAdvisorRecordRefund = new TravelAdvisorRecordRefund(stage);
+            Scene scene = new Scene(travelAdvisorRecordRefund, 850, 500);
             stage.setScene(scene);
         });
 
@@ -63,13 +97,13 @@ public class TravelAdvisorMainPage extends BorderPane {
         int buttonWidth = 200;
         generateSalesReportButton.setPrefWidth(buttonWidth);
         viewOwnBlankStockButton.setPrefWidth(buttonWidth);
-        recordSaleButton.setPrefWidth(buttonWidth);
+        blankTypeField.setPrefWidth(buttonWidth);
         recordRefundButton.setPrefWidth(buttonWidth);
         viewCustomerDetailsButton.setPrefWidth(buttonWidth);
         addNewCustomerDetailsButton.setPrefWidth(buttonWidth);
 
         // Center the Items
-        VBox centerBox = new VBox(20, generateSalesReportButton, viewOwnBlankStockButton, recordSaleButton, recordRefundButton , viewCustomerDetailsButton, addNewCustomerDetailsButton);
+        VBox centerBox = new VBox(20, generateSalesReportButton, viewOwnBlankStockButton, blankTypeField, recordRefundButton , viewCustomerDetailsButton, addNewCustomerDetailsButton);
         centerBox.setAlignment(Pos.CENTER);
 
         BorderPane.setMargin(pageTitle, new Insets(65));

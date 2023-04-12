@@ -24,7 +24,7 @@ public class SystemAdministratorAddBlank extends BorderPane {
     public SystemAdministratorAddBlank(Stage stage) {
         // Create Title Text
         Label pageTitle = new Label("Add Blanks");
-        pageTitle.setFont(Font.font("Verdana", FontWeight.BOLD, 36));
+        pageTitle.setFont(Font.font("Karla", FontWeight.BOLD, 36));
         pageTitle.setUnderline(true);
         pageTitle.setTextAlignment(TextAlignment.CENTER);
 

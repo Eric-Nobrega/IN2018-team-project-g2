@@ -17,10 +17,10 @@ import static dbfuncs.DBMethods.*;
 
 public class TravelAdvisorRecordSale extends BorderPane {
 
-    public TravelAdvisorRecordSale(Stage stage) {
+    public TravelAdvisorRecordSale(Stage stage, String blankType) {
         // Create Title Text
         Label pageTitle = new Label("Record Sale");
-        pageTitle.setFont(Font.font("Verdana", FontWeight.BOLD, 36));
+        pageTitle.setFont(Font.font("Karla", FontWeight.BOLD, 36));
         pageTitle.setUnderline(true);
         pageTitle.setTextAlignment(TextAlignment.CENTER);
 
@@ -114,7 +114,7 @@ public class TravelAdvisorRecordSale extends BorderPane {
             String cardCVV = cvvField.getText();
             String discountGiven = discountField.getText();
 
-            DBMethods.recordSale(customerName, address, email, phoneNumber, date, destination, payNowOrLater, paymentMethod, currencyName, priceAmount, cardNumber, cardCVV, discountGiven);
+            DBMethods.recordSale(customerName, address, email, phoneNumber, date, destination, payNowOrLater, paymentMethod, currencyName, priceAmount, cardNumber, cardCVV, discountGiven, blankType);
 
             System.out.println("Form submitted!");
         });

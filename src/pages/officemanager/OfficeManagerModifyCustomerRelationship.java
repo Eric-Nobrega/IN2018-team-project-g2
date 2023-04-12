@@ -25,7 +25,7 @@ public class OfficeManagerModifyCustomerRelationship extends BorderPane {
     public OfficeManagerModifyCustomerRelationship(Stage stage) {
         // Create Title Text
         Label pageTitle = new Label("Modify Customer Relationship");
-        pageTitle.setFont(Font.font("Verdana", FontWeight.BOLD, 36));
+        pageTitle.setFont(Font.font("Karla", FontWeight.BOLD, 36));
         pageTitle.setUnderline(true);
         pageTitle.setTextAlignment(TextAlignment.CENTER);
 

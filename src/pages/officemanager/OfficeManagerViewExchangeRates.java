@@ -24,7 +24,7 @@ public class OfficeManagerViewExchangeRates extends BorderPane {
     public OfficeManagerViewExchangeRates(Stage stage) {
         // Create Title Text
         Label pageTitle = new Label("View Exchange Rates");
-        pageTitle.setFont(Font.font("Verdana", FontWeight.BOLD, 36));
+        pageTitle.setFont(Font.font("Karla", FontWeight.BOLD, 36));
         pageTitle.setUnderline(true);
         pageTitle.setTextAlignment(TextAlignment.CENTER);
 
@@ -44,7 +44,7 @@ public class OfficeManagerViewExchangeRates extends BorderPane {
         TableColumn<ExchangeRate, String> currencyColumn = new TableColumn<>("Currency");
         currencyColumn.setCellValueFactory(new PropertyValueFactory<>("CurrencyName"));
 
-        TableColumn<ExchangeRate, Double> rateColumn = new TableColumn<>("AmountUSD");
+        TableColumn<ExchangeRate, Double> rateColumn = new TableColumn<>("Local Currency Value In USD");
         rateColumn.setCellValueFactory(new PropertyValueFactory<>("AmountUSD"));
 
         exchangeRateTable.getColumns().addAll(currencyColumn, rateColumn);
@@ -54,7 +54,7 @@ public class OfficeManagerViewExchangeRates extends BorderPane {
         try {
             // Populate table view with exchange rates
             while (rs.next()) {
-                ExchangeRate exchangeRate = new ExchangeRate(rs.getInt("Amount"), rs.getString("CurrencyName"), rs.getInt("AmountUSD"));
+                ExchangeRate exchangeRate = new ExchangeRate(1, rs.getString("CurrencyName"), rs.getInt("AmountUSD"));
                 exchangeRate.setAmountUSD(rs.getInt("AmountUSD"));
                 exchangeRateTable.getItems().add(exchangeRate);
             }
