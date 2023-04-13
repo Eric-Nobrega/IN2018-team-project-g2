@@ -93,8 +93,8 @@ public class TravelAdvisorViewOwnBlankStock extends BorderPane {
 
     // Define a BlankStock class to hold the data from the database
     public static class BlankStock {
-        private String type;
-        private int qty;
+        private final String type;
+        private final int qty;
 
         public BlankStock(String type, int qty) {
             this.type = type;

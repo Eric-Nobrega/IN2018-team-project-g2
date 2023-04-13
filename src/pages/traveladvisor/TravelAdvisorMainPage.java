@@ -28,7 +28,8 @@ public class TravelAdvisorMainPage extends BorderPane {
         pageTitle.setTextAlignment(TextAlignment.CENTER);
 
         // Create Functionality Buttons
-        Button generateSalesReportButton = new Button("Generate Sales Report");
+        Button generateDomesticSalesReport = new Button("Generate Domestic Sales Report");
+        Button generateInterlineSalesReport = new Button("Generate Interline Sales Report");
         Button viewOwnBlankStockButton = new Button("View Blank Stock (Own)");
         ComboBox<String> blankTypeField = new ComboBox<>();
         blankTypeField.setPromptText("Record A Sale");
@@ -86,6 +87,18 @@ public class TravelAdvisorMainPage extends BorderPane {
             stage.setScene(scene);
         });
 
+        generateDomesticSalesReport.setOnAction(event -> {
+            TravelAdvisorDomesticSalesReport travelAdvisorRecordRefund = new TravelAdvisorDomesticSalesReport(stage);
+            Scene scene = new Scene(travelAdvisorRecordRefund, 850, 500);
+            stage.setScene(scene);
+        });
+
+        generateInterlineSalesReport.setOnAction(event -> {
+            TravelAdvisorInterlineSalesReport travelAdvisorRecordRefund = new TravelAdvisorInterlineSalesReport(stage);
+            Scene scene = new Scene(travelAdvisorRecordRefund, 850, 500);
+            stage.setScene(scene);
+        });
+
         // Logout Button Functionality
         logoutButton.setOnAction(event -> {
             LoginPage loginPage = new LoginPage();
@@ -95,7 +108,8 @@ public class TravelAdvisorMainPage extends BorderPane {
 
         // Set the same width for all buttons
         int buttonWidth = 200;
-        generateSalesReportButton.setPrefWidth(buttonWidth);
+        generateInterlineSalesReport.setPrefWidth(buttonWidth);
+        generateDomesticSalesReport.setPrefWidth(buttonWidth);
         viewOwnBlankStockButton.setPrefWidth(buttonWidth);
         blankTypeField.setPrefWidth(buttonWidth);
         recordRefundButton.setPrefWidth(buttonWidth);
@@ -103,7 +117,7 @@ public class TravelAdvisorMainPage extends BorderPane {
         addNewCustomerDetailsButton.setPrefWidth(buttonWidth);
 
         // Center the Items
-        VBox centerBox = new VBox(20, generateSalesReportButton, viewOwnBlankStockButton, blankTypeField, recordRefundButton , viewCustomerDetailsButton, addNewCustomerDetailsButton);
+        VBox centerBox = new VBox(20, generateDomesticSalesReport, generateInterlineSalesReport,  viewOwnBlankStockButton, blankTypeField, recordRefundButton , viewCustomerDetailsButton, addNewCustomerDetailsButton);
         centerBox.setAlignment(Pos.CENTER);
 
         BorderPane.setMargin(pageTitle, new Insets(65));

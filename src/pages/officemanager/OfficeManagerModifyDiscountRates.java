@@ -12,13 +12,13 @@ import java.sql.SQLException;
 
 public class OfficeManagerModifyDiscountRates extends VBox {
 
-    private TextField fixedDiscountRateField;
-    private TextField variableDiscountRateField;
-    private Button fixedDiscountRateButton;
-    private Button variableDiscountRateButton;
+    private final TextField fixedDiscountRateField;
+    private final TextField variableDiscountRateField;
+    private final Button fixedDiscountRateButton;
+    private final Button variableDiscountRateButton;
 
-    private int currentFixedDiscountRate;
-    private int currentVariableDiscountRate;
+    private final int currentFixedDiscountRate;
+    private final int currentVariableDiscountRate;
 
     public OfficeManagerModifyDiscountRates(Stage stage) {
         // query db here to update the rate figures

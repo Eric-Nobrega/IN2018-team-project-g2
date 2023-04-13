@@ -79,7 +79,7 @@ public class SystemAdministratorViewBlankStock extends BorderPane {
         // Add table view to border pane
         this.setCenter(blankTable);
         this.setBottom(backToHomePage);
-        this.setMargin(backToHomePage, new Insets(10));
+        setMargin(backToHomePage, new Insets(10));
     }
 
     private ObservableList<Blank> getAllBlanksFromDB() {

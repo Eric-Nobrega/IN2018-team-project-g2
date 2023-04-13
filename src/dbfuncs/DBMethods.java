@@ -1,12 +1,24 @@
 package dbfuncs;
 
+import com.sun.media.jfxmediaimpl.platform.Platform;
 import interfaces.Customer;
 import interfaces.ExchangeRate;
 import interfaces.TravelAgent;
 import interfaces.User;
+import pages.officemanager.OfficeManagerGenerateGlobalSalesReport;
+import pages.traveladvisor.TravelAdvisorGenerateDomesticSalesReport;
+import pages.traveladvisor.TravelAdvisorGenerateInterlineSalesReport;
+import pages.traveladvisor.TravelAdvisorInterlineSalesReport;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class DBMethods {
     public static int userID;
@@ -1194,7 +1206,6 @@ public class DBMethods {
             insertStatement.setString(1, newBlankCode);
             insertStatement.executeUpdate();
         }
-        ;
 
         //   public static void removeBlankCode(){};
 //    public static ResultSet getAllBlankCodes(){};
@@ -1344,5 +1355,498 @@ public class DBMethods {
         }
     }
 
+    public static String getTableDDL(String tableName) {
+        try (Statement statement = connectToDB().createStatement();
+        ResultSet rs = statement.executeQuery("SHOW CREATE TABLE `" + tableName + "`")){
+            if (rs.next()) {
+                String ddl = rs.getString(2);
+                return ddl;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void backupDatabase() {
+        String databaseName = "in2018g02"; // replace with your database name
+        String backupDirectoryPath = "C:\\backup"; // replace with your desired backup directory path
+
+        try {
+            // create backup directory if it doesn't exist
+            File backupDirectory = new File(backupDirectoryPath);
+            if (!backupDirectory.exists()) {
+                backupDirectory.mkdirs();
+            }
+            LocalDateTime now = LocalDateTime.now();
+            // create backup file name with timestamp
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            String backupFileName = databaseName + "_" + dtf.format(now) + ".sql";
+
+            File backupFile = new File(backupDirectoryPath + File.separator + backupFileName);
+
+            // create connection to database
+            Connection conn = connectToDB();
+
+            // retrieve database schema and data
+            DatabaseMetaData metadata = conn.getMetaData();
+            ResultSet tables = metadata.getTables(null, null, null, new String[] {"TABLE"});
+            BufferedWriter writer = new BufferedWriter(new FileWriter(backupFile));
+            while (tables.next()) {
+                String tableName = tables.getString("TABLE_NAME");
+                writer.write("--\n");
+                writer.write("-- Table structure for table `" + tableName + "`\n");
+                writer.write("--\n\n");
+                writer.write("DROP TABLE IF EXISTS `" + tableName + "`;\n");
+                writer.write(getTableDDL(tableName) + ";\n\n");
+                writer.write("--\n");
+                writer.write("-- Dumping data for table `" + tableName + "`\n");
+                writer.write("--\n\n");
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery("SELECT * FROM `" + tableName + "`");
+                ResultSetMetaData rsmd = rs.getMetaData();
+                int numColumns = rsmd.getColumnCount();
+                while (rs.next()) {
+                    writer.write("INSERT INTO `" + tableName + "` VALUES (");
+                    for (int i = 1; i <= numColumns; i++) {
+                        Object value = rs.getObject(i);
+                        if (value == null) {
+                            writer.write("NULL");
+                        } else if (rsmd.getColumnType(i) == Types.VARCHAR ||
+                                rsmd.getColumnType(i) == Types.CHAR ||
+                                rsmd.getColumnType(i) == Types.DATE ||
+                                rsmd.getColumnType(i) == Types.TIME ||
+                                rsmd.getColumnType(i) == Types.TIMESTAMP) {
+                            writer.write("'" + rs.getString(i).replaceAll("'", "''") + "'");
+                        } else {
+                            writer.write(rs.getString(i));
+                        }
+                        if (i < numColumns) {
+                            writer.write(", ");
+                        }
+                    }
+                    writer.write(");\n");
+                }
+                rs.close();
+                stmt.close();
+                writer.write("\n");
+            }
+            writer.close();
+            conn.close();
+
+            System.out.println("Database backup created successfully: " + backupFile.getAbsolutePath());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Report Related Methods
+    public static int countNewBlanksReceivedByAgent(String startDate, String endDate) {
+        int rowCount = 0;
+        try {
+            // establish database connection
+            Connection conn = connectToDB();
+
+            // prepare SQL statement
+            String sql = "SELECT COUNT(*) AS rowcount FROM BlanksTB WHERE DateReceived BETWEEN ? AND ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, startDate);
+            pstmt.setString(2, endDate);
+
+            // execute SQL statement and process results
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                rowCount = rs.getInt("rowcount");
+            }
+        } catch (SQLException e) {
+            // handle database error
+            e.printStackTrace();
+        }
+        return rowCount;
+    }
+
+    public static int countBlanksAssignedToAdvisors(String startDate, String endDate) {
+        int count = 0;
+        try (PreparedStatement ps = connectToDB().prepareStatement(
+                "SELECT COUNT(*) FROM BlanksTB WHERE DateReceived BETWEEN ? AND ? AND isAssigned = 1")) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    public static int countExistingBlanksAssignedToAdvisors(String startDate, String endDate) {
+        int count = 0;
+        try (Statement statement = connectToDB().createStatement();
+             ResultSet rs = statement.executeQuery("SELECT COUNT(*) FROM BlanksTB WHERE DateReceived < '" + startDate + "' AND isAssigned = 1")) {
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    public static int countBlanksUsedByTheAdvisors(String startDate, String endDate){
+        int count = 0;
+        try {
+            Connection conn = connectToDB();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM BlanksTB WHERE isAssigned = 1 AND DateReceived BETWEEN '" + startDate + "' AND '" + endDate + "'");
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    public static int countBlanksAvailableInAgentsStock(String startDate, String endDate) {
+        int count = 0;
+        try (Statement statement = connectToDB().createStatement();
+             ResultSet rs = statement.executeQuery("SELECT COUNT(*) FROM BlanksTB WHERE DateReceived >= '" + endDate + "'")) {
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    public static int countAmountOfBlanksOfAGivenType(String startDate, String endDate){
+        int count = 0;
+        try (Statement stmt = connectToDB().createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM BlanksTB WHERE isAssigned = 0 AND DateReceived >= '" + endDate + "'")) {
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    public static OfficeManagerGenerateGlobalSalesReport.GlobalInterlineSalesReport GlobalInterlineSalesReport(String startDate, String endDate) {
+
+        // Get the total amount paid by summing the Amount column in the Sale table
+        int totalAmountPaid = getSumOfAmount(startDate, endDate);
+
+        // Get the total commission amount by summing the Rate column in the Commision table and applying it as a percentage to the sale rows
+        int totalCommissionAmount = getSumOfRate(startDate, endDate);
+
+        // Get the total net amount by subtracting the total commission amount from the total amount paid
+        int totalNetAmount = (int) (totalAmountPaid - ((totalCommissionAmount/100.0) * totalAmountPaid));
+
+
+        System.out.println(totalNetAmount + " " + totalAmountPaid + " " + totalCommissionAmount);
+
+        // Create and return a new GlobalInterlineSalesReport object with the calculated values
+        OfficeManagerGenerateGlobalSalesReport.GlobalInterlineSalesReport gReport = new OfficeManagerGenerateGlobalSalesReport.GlobalInterlineSalesReport(totalNetAmount, totalAmountPaid, totalCommissionAmount);
+        return gReport;
+    }
+
+    public static OfficeManagerGenerateGlobalSalesReport.GlobalInterlineSalesReport GlobalDomesticSalesReport(String startDate, String endDate) {
+
+        // Get the total amount paid by summing the Amount column in the Sale table
+        int totalAmountPaid = getSumOfAmountDomestic(startDate, endDate);
+
+        // Get the total commission amount by summing the Rate column in the Commision table and applying it as a percentage to the sale rows
+        int totalCommissionAmount = getSumOfRate(startDate, endDate);
+
+        // Get the total net amount by subtracting the total commission amount from the total amount paid
+        int totalNetAmount = (int) (totalAmountPaid - ((totalCommissionAmount/100.0) * totalAmountPaid));
+
+
+        System.out.println(totalNetAmount + " " + totalAmountPaid + " " + totalCommissionAmount);
+
+        // Create and return a new GlobalInterlineSalesReport object with the calculated values
+        OfficeManagerGenerateGlobalSalesReport.GlobalInterlineSalesReport gReport = new OfficeManagerGenerateGlobalSalesReport.GlobalInterlineSalesReport(totalNetAmount, totalAmountPaid, totalCommissionAmount);
+        return gReport;
+    }
+    private static int getSumOfAmount(String startDate, String endDate) {
+        int sum = 0;
+        try {
+            Connection conn = connectToDB();
+            // Prepare a SQL query to retrieve the data from the Sale table
+            String sql = "SELECT Amount FROM Sale WHERE Date BETWEEN ? AND ? AND isInterline = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, startDate);
+            pstmt.setString(2, endDate);
+            pstmt.setInt(3, 1);
+
+            // Execute the query and retrieve the result set
+            ResultSet rs = pstmt.executeQuery();
+
+            // Loop through the result set and calculate the sum of the Amount column
+            while (rs.next()) {
+                sum += rs.getInt("Amount");
+            }
+
+            // Close the result set and the prepared statement
+            rs.close();
+            pstmt.close();
+        } catch (SQLException e) {
+            // Handle any exceptions that occur
+            e.printStackTrace();
+        }
+
+        return sum;
+    }
+    private static int getSumOfRate(String startDate, String endDate) {
+        int sum = 0;
+        try {
+            // Connect to the database
+            Connection conn = connectToDB();
+
+            // Prepare the query to retrieve commission data for the given date range
+            String query = "SELECT Rate FROM Commision WHERE DateSet >= ? AND DateSet <= ?";
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, startDate);
+            pstmt.setString(2, endDate);
+
+            // Execute the query and retrieve the result set
+            ResultSet rs = pstmt.executeQuery();
+
+            // Calculate the sum of the Rate column
+            while (rs.next()) {
+                sum += rs.getInt("Rate");
+            }
+
+            // Close the result set, statement, and connection
+            rs.close();
+            pstmt.close();
+            conn.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return sum;
+    }
+    private static int getTotalAmountPaid(String startDate, String endDate) {
+        int totalAmountPaid = 0;
+        try {
+            // connect to database
+            Connection conn = connectToDB();
+
+            // prepare query
+            String query = "SELECT SUM(Amount) AS TotalAmountPaid FROM Sale WHERE Date >= ? AND Date <= ? AND isInterline = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, startDate);
+            stmt.setString(2, endDate);
+            stmt.setInt(2, 1);
+
+            // execute query and get result
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                totalAmountPaid = rs.getInt("TotalAmountPaid");
+            }
+
+            // close resources
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            // handle exception
+            e.printStackTrace();
+        }
+        return totalAmountPaid;
+    }
+    private static int getSumOfAmountDomestic(String startDate, String endDate) {
+        int sum = 0;
+        try {
+            Connection conn = connectToDB();
+            // Prepare a SQL query to retrieve the data from the Sale table
+            String sql = "SELECT Amount FROM Sale WHERE Date BETWEEN ? AND ? AND isInterline = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, startDate);
+            pstmt.setString(2, endDate);
+            pstmt.setInt(3, 0); // Only consider domestic flights
+
+            // Execute the query and retrieve the result set
+            ResultSet rs = pstmt.executeQuery();
+
+            // Loop through the result set and calculate the sum of the Amount column
+            while (rs.next()) {
+                sum += rs.getInt("Amount");
+            }
+
+            // Close the result set and the prepared statement
+            rs.close();
+            pstmt.close();
+        } catch (SQLException e) {
+            // Handle any exceptions that occur
+            e.printStackTrace();
+        }
+
+        return sum;
+    }
+
+    public static TravelAdvisorGenerateInterlineSalesReport.GlobalInterlineSalesReport PersonalInterlineSalesReport(String startDate, String endDate) {
+
+        // Get the total amount paid by summing the Amount column in the Sale table
+        int totalAmountPaid = getAdvisorSumOfAmount(startDate, endDate);
+
+        // Get the total commission amount by summing the Rate column in the Commision table and applying it as a percentage to the sale rows
+        int totalCommissionAmount = getSumOfRate(startDate, endDate);
+
+        // Get the total net amount by subtracting the total commission amount from the total amount paid
+        int totalNetAmount = (int) (totalAmountPaid - ((totalCommissionAmount/100.0) * totalAmountPaid));
+
+
+        System.out.println(totalNetAmount + " " + totalAmountPaid + " " + totalCommissionAmount);
+
+        // Create and return a new GlobalInterlineSalesReport object with the calculated values
+        TravelAdvisorGenerateInterlineSalesReport.GlobalInterlineSalesReport gReport = new TravelAdvisorGenerateInterlineSalesReport.GlobalInterlineSalesReport(totalNetAmount, totalAmountPaid, totalCommissionAmount);
+        return gReport;
+    }
+
+    public static TravelAdvisorGenerateDomesticSalesReport.GlobalInterlineSalesReport PersonalDomesticSalesReport(String startDate, String endDate) {
+
+        // Get the total amount paid by summing the Amount column in the Sale table
+        int totalAmountPaid = getAdvisorSumOfAmountDomestic(startDate, endDate);
+
+        // Get the total commission amount by summing the Rate column in the Commision table and applying it as a percentage to the sale rows
+        int totalCommissionAmount = getAdvisorSumOfRate(startDate, endDate);
+
+        // Get the total net amount by subtracting the total commission amount from the total amount paid
+        int totalNetAmount = (int) (totalAmountPaid - ((totalCommissionAmount/100.0) * totalAmountPaid));
+
+
+        System.out.println(totalNetAmount + " " + totalAmountPaid + " " + totalCommissionAmount);
+
+        // Create and return a new GlobalInterlineSalesReport object with the calculated values
+        TravelAdvisorGenerateDomesticSalesReport.GlobalInterlineSalesReport gReport = new TravelAdvisorGenerateDomesticSalesReport.GlobalInterlineSalesReport(totalNetAmount, totalAmountPaid, totalCommissionAmount);
+        return gReport;
+    }
+    private static int getAdvisorSumOfAmount(String startDate, String endDate) {
+        int sum = 0;
+        try {
+            Connection conn = connectToDB();
+            // Prepare a SQL query to retrieve the data from the Sale table
+            String sql = "SELECT Amount FROM Sale WHERE Date BETWEEN ? AND ? AND isInterline = ? AND `Travel AdvisorAdvisorId` = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, startDate);
+            pstmt.setString(2, endDate);
+            pstmt.setInt(3, 1);
+            pstmt.setInt(4, getTravelAdvisorID());
+
+            // Execute the query and retrieve the result set
+            ResultSet rs = pstmt.executeQuery();
+
+            // Loop through the result set and calculate the sum of the Amount column
+            while (rs.next()) {
+                sum += rs.getInt("Amount");
+            }
+
+            // Close the result set and the prepared statement
+            rs.close();
+            pstmt.close();
+        } catch (SQLException e) {
+            // Handle any exceptions that occur
+            e.printStackTrace();
+        }
+
+        return sum;
+    }
+    private static int getAdvisorSumOfRate(String startDate, String endDate) {
+        int sum = 0;
+        try {
+            // Connect to the database
+            Connection conn = connectToDB();
+
+            // Prepare the query to retrieve commission data for the given date range
+            String query = "SELECT Rate FROM Commision WHERE DateSet >= ? AND DateSet <= ?";
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, startDate);
+            pstmt.setString(2, endDate);
+
+            // Execute the query and retrieve the result set
+            ResultSet rs = pstmt.executeQuery();
+
+            // Calculate the sum of the Rate column
+            while (rs.next()) {
+                sum += rs.getInt("Rate");
+            }
+
+            // Close the result set, statement, and connection
+            rs.close();
+            pstmt.close();
+            conn.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return sum;
+    }
+    private static int getAdvisorTotalAmountPaid(String startDate, String endDate) {
+        int totalAmountPaid = 0;
+        try {
+            // connect to database
+            Connection conn = connectToDB();
+
+            // prepare query
+            String query = "SELECT SUM(Amount) AS TotalAmountPaid FROM Sale WHERE Date >= ? AND Date <= ? AND isInterline = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, startDate);
+            stmt.setString(2, endDate);
+            stmt.setInt(2, 1);
+
+            // execute query and get result
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                totalAmountPaid = rs.getInt("TotalAmountPaid");
+            }
+
+            // close resources
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            // handle exception
+            e.printStackTrace();
+        }
+        return totalAmountPaid;
+    }
+    private static int getAdvisorSumOfAmountDomestic(String startDate, String endDate) {
+        int sum = 0;
+        try {
+            Connection conn = connectToDB();
+            // Prepare a SQL query to retrieve the data from the Sale table
+            String sql = "SELECT Amount FROM Sale WHERE Date BETWEEN ? AND ? AND isInterline = ? AND `Travel AdvisorAdvisorId` = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, startDate);
+            pstmt.setString(2, endDate);
+            pstmt.setInt(3, 0); // Only consider domestic flights
+            pstmt.setInt(4, getTravelAdvisorID());
+
+            // Execute the query and retrieve the result set
+            ResultSet rs = pstmt.executeQuery();
+
+            // Loop through the result set and calculate the sum of the Amount column
+            while (rs.next()) {
+                sum += rs.getInt("Amount");
+            }
+
+            // Close the result set and the prepared statement
+            rs.close();
+            pstmt.close();
+        } catch (SQLException e) {
+            // Handle any exceptions that occur
+            e.printStackTrace();
+        }
+
+        return sum;
+    }
 
 }

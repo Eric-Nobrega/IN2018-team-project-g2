@@ -1,5 +1,6 @@
 package pages.systemadministrator;
 
+import dbfuncs.DBMethods;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -36,6 +37,7 @@ public class SystemAdministratorMainPage extends BorderPane {
         Button editUserDetailsButton = new Button("Edit User Details");
         Button editStaffDetailsButton = new Button("Edit Staff Details");
         Button editTravelAgentDetailsButton = new Button("Edit Travel Agent Details");
+        Button backupDatabaseButton = new Button("Backup Database");
 
         // Create Logout Button
         Button logoutButton = new Button("Logout");
@@ -120,6 +122,9 @@ public class SystemAdministratorMainPage extends BorderPane {
             stage.setScene(scene);
         });
 
+        backupDatabaseButton.setOnAction(event -> {
+            DBMethods.backupDatabase();
+        });
 
         // Set the same width for all buttons
         int buttonWidth = 200;
@@ -135,11 +140,12 @@ public class SystemAdministratorMainPage extends BorderPane {
         editUserDetailsButton.setPrefWidth(buttonWidth);
         editStaffDetailsButton.setPrefWidth(buttonWidth);
         editTravelAgentDetailsButton.setPrefWidth(buttonWidth);
+        backupDatabaseButton.setPrefWidth(buttonWidth);
 
         // Create two containers to hold the buttons
         VBox leftBox = new VBox(20, viewBlankStockButton, addBlankButton, removeBlankButton, addBlankCodeButton, removeBlankCodeButton, addUserButton);
         leftBox.setAlignment(Pos.CENTER);
-        VBox rightBox = new VBox(20, removeUserButton, addStaffMemberButton, removeStaffMemberButton, editUserDetailsButton, editStaffDetailsButton, editTravelAgentDetailsButton);
+        VBox rightBox = new VBox(20, backupDatabaseButton, removeUserButton, addStaffMemberButton, removeStaffMemberButton, editUserDetailsButton, editStaffDetailsButton, editTravelAgentDetailsButton);
         rightBox.setAlignment(Pos.CENTER);
 
         // Create a container to hold the two containers

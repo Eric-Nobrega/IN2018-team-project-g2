@@ -1,14 +1,14 @@
 package interfaces;
 
 public class Customer {
-    private int customerId;
-    private String customerName;
-    private int CustomerphoneNumber;
-    private String customerEmail;
-    private String cardNumber;
-    private int cvv;
-    private String Relationship;
-    private int travelAgentId;
+    private final int customerId;
+    private final String customerName;
+    private final int CustomerphoneNumber;
+    private final String customerEmail;
+    private final String cardNumber;
+    private final int cvv;
+    private final String Relationship;
+    private final int travelAgentId;
 
     public Customer(int customerId, String customerName, int customerPhoneNumber, String customerEmail, String cardNumber, int cvv, String customerRelationship, int travelAgentId) {
         this.customerId = customerId;

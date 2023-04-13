@@ -54,8 +54,26 @@ public class OfficeManagerMainPage extends BorderPane {
             stage.setScene(scene);
         });
 
+        createReport1Button.setOnAction(event -> {
+            OfficeManagerTicketStockTurnoverReport viewBlankStock = new OfficeManagerTicketStockTurnoverReport(stage);
+            Scene scene = new Scene(viewBlankStock, 850, 500);
+            stage.setScene(scene);
+        });
+
         viewBlankStockButton.setOnAction(event -> {
             SystemAdministratorViewBlankStock viewBlankStock = new SystemAdministratorViewBlankStock(stage);
+            Scene scene = new Scene(viewBlankStock, 850, 500);
+            stage.setScene(scene);
+        });
+
+        createReport2Button.setOnAction(event -> {
+            OfficeManagerGlobalSalesReport viewBlankStock = new OfficeManagerGlobalSalesReport(stage);
+            Scene scene = new Scene(viewBlankStock, 850, 500);
+            stage.setScene(scene);
+        });
+
+        createReport3Button.setOnAction(event -> {
+            OfficeManagerGlobalDomesticSalesReport viewBlankStock = new OfficeManagerGlobalDomesticSalesReport(stage);
             Scene scene = new Scene(viewBlankStock, 850, 500);
             stage.setScene(scene);
         });
