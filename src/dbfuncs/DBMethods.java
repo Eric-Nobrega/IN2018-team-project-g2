@@ -115,33 +115,55 @@ public class DBMethods {
 
     public static boolean addUser(String username, String password, String role, String name) {
 
-        // SQL query to insert new user
-        String query = "INSERT INTO USER (UserName, PASSWORD, Role) VALUES (?, ?, ?)";
+        String[] names = name.split(" ");
+        String advisorFirstName = names[0];
+        String advisorLastName = names[1];
+
+        String query1 = "INSERT INTO `Travel Advisor` (AdvisorFirstName, AdvisorLastName) VALUES (?, ?)";
+
+        String query2 = "INSERT INTO USER (UserName, PASSWORD, Role, TravelAdvisorId) VALUES (?, ?, ?, ?)";
 
         try {
             // establish database connection
             Connection databaseConnection = connectToDB();
 
+            PreparedStatement statement = databaseConnection.prepareStatement(query1,
+                    Statement.RETURN_GENERATED_KEYS); // enable retrieval of generated keys
+            statement.setString(1, advisorFirstName);
+            statement.setString(2, advisorLastName);
+
+            // execute query and retrieve generated keys
+            int rowsInserted = statement.executeUpdate();
+            ResultSet generatedKeys = statement.getGeneratedKeys();
+
+            // retrieve the ID of the first inserted row
+            int travelAdvisorId = -1;
+            if (generatedKeys.next()) {
+                travelAdvisorId = generatedKeys.getInt(1);
+            }
+
             // create prepared statement for SQL query
-            PreparedStatement statement = databaseConnection.prepareStatement(query);
-            statement.setString(1, username);
-            statement.setString(2, password);
-            statement.setString(3, role);
-            //   statement.setString(4, name);
+            PreparedStatement statement2 = databaseConnection.prepareStatement(query2);
+            statement2.setString(1, username);
+            statement2.setString(2, password);
+            statement2.setString(3, role);
+            statement2.setInt(4, travelAdvisorId); // use the retrieved ID
 
             // execute query
-            int rowsInserted = statement.executeUpdate();
+            int rowsInserted2 = statement2.executeUpdate();
 
             // close database resources
             statement.close();
+            statement2.close();
             databaseConnection.close();
 
-            return rowsInserted > 0;
+            return rowsInserted > 0 && rowsInserted2 > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
+
 
     public static ResultSet getAllUsers() {
 
@@ -429,8 +451,33 @@ public class DBMethods {
         }
     }
 
+    public static int getTravelAdvisorID() {
+        String query = "SELECT TravelAdvisorId FROM USER WHERE UserId = ?";
+
+        // establish database connection
+        Connection databaseConnection = connectToDB();
+
+        try {
+            // create prepared statement for SQL query
+            PreparedStatement statement = databaseConnection.prepareStatement(query);
+            statement.setInt(1, userID);
+            ResultSet resultSet = statement.executeQuery();
+
+            // get the ID value from the ResultSet and return it
+            if (resultSet.next()) {
+                int travelAgentID = resultSet.getInt("TravelAdvisorId");
+                return travelAgentID;
+            } else {
+                return -1; // return -1 if the travel agent name was not found
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1; // return -1 in case of any exception
+        }
+    }
+
     public static ResultSet getBlanksByAdvisorID() {
-        String sql2 = "SELECT Type, COUNT(*) AS qty FROM BlanksTB WHERE `Travel AdvisorAdvisorId` = 1 AND isValid = ? GROUP BY Type;";
+        String sql2 = "SELECT Type, COUNT(*) AS qty FROM BlanksTB WHERE `Travel AdvisorAdvisorId` = ? AND isValid = ? GROUP BY Type;";
 
         // establish database connection
         Connection databaseConnection = connectToDB();
@@ -438,8 +485,11 @@ public class DBMethods {
         try {
             // create prepared statement for SQL query
             PreparedStatement stmt2 = databaseConnection.prepareStatement(sql2);
-            stmt2.setString(1, "false");
+            stmt2.setInt(1, getTravelAdvisorID());
+            stmt2.setString(2, "false");
             ResultSet rs2 = stmt2.executeQuery();
+
+            System.out.println("tID: " + getTravelAdvisorID());
 
             return rs2;
         } catch (SQLException e) {
@@ -732,7 +782,7 @@ public class DBMethods {
         }
     }
 
-    public static void updateExchangeRate(String currencyName, int newRate) {
+    public static void updateExchangeRate(String currencyName, double newRate) {
         // SQL query to update or insert exchange rate
         String querySelect = "SELECT COUNT(*) FROM ExchangeRate WHERE CurrencyName = ?";
         String queryUpdate = "UPDATE ExchangeRate SET AmountUSD = ? WHERE CurrencyName = ?";
@@ -1061,31 +1111,6 @@ public class DBMethods {
         }
     }
 
-    public static int getTravelAdvisorID() {
-        String query = "SELECT TravelAdvisorId FROM USER WHERE UserId = ?";
-
-        // establish database connection
-        Connection databaseConnection = connectToDB();
-
-        try {
-            // create prepared statement for SQL query
-            PreparedStatement statement = databaseConnection.prepareStatement(query);
-            statement.setString(1, String.valueOf(userID));
-            ResultSet resultSet = statement.executeQuery();
-
-            // get the ID value from the ResultSet and return it
-            if (resultSet.next()) {
-                int travelAgentID = resultSet.getInt("TravelAdvisorId");
-                return travelAgentID;
-            } else {
-                return -1; // return -1 if the travel agent name was not found
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return -1; // return -1 in case of any exception
-        }
-    }
-
     public static void recordSale(String customerName, String customerAddress, String customerEmail, String customerPhoneNumber, String date, String destination, String payNowOrLater, String paymentMethod, String currencyName, int priceAmount, String cardNumber, String cardCVV, String discountGiven, String blankType) {
         System.out.println(blankType);
         try {
@@ -1251,7 +1276,7 @@ public class DBMethods {
             stmt = conn.prepareStatement(query);
             stmt.setString(1, blankCode);
             stmt.setInt(2, advisorID);
-            stmt.setInt(3, 0);
+            stmt.setString(3, "false");
             rs = stmt.executeQuery();
 
             if (rs.next()) {
@@ -1305,7 +1330,7 @@ public class DBMethods {
 
     public static void refundTicket(int ticketID) {
         // SQL query to update the isCancelled column for the ticket with the given ticketID
-        String updateQuery = "UPDATE Tickets SET isCancelled = true WHERE TicketId = ?";
+        String updateQuery = "UPDATE Tickets SET isCancelled = true, RefundDate = ? WHERE TicketId = ?";
 
         // SQL query to insert a row into the Refunds table
         String insertQuery = "INSERT INTO Refund (Date, TicketID) VALUES (?, ?)";
@@ -1314,9 +1339,11 @@ public class DBMethods {
             // establish database connection
             Connection databaseConnection = connectToDB();
 
+            LocalDate currentDate = LocalDate.now();
             // create prepared statement for update query
             PreparedStatement updateStatement = databaseConnection.prepareStatement(updateQuery);
-            updateStatement.setInt(1, ticketID);
+            updateStatement.setString(1, String.valueOf(currentDate));
+            updateStatement.setInt(2, ticketID);
 
             // execute update query
             int rowsAffected = updateStatement.executeUpdate();
@@ -1326,9 +1353,6 @@ public class DBMethods {
 
                 // create prepared statement for insert query
                 PreparedStatement insertStatement = databaseConnection.prepareStatement(insertQuery);
-
-                // set date to today's date
-                LocalDate currentDate = LocalDate.now();
 
                 // set date parameter
                 insertStatement.setString(1, String.valueOf(currentDate));
@@ -1845,8 +1869,30 @@ public class DBMethods {
             // Handle any exceptions that occur
             e.printStackTrace();
         }
-
         return sum;
     }
+
+    public static ResultSet getAllRefunds() {
+
+        // SQL query to retrieve all user names
+        String query = "SELECT * FROM Refund";
+
+        try {
+            // establish database connection
+            Connection databaseConnection = connectToDB();
+
+            // create prepared statement for SQL query
+            PreparedStatement statement = databaseConnection.prepareStatement(query);
+
+            // execute query
+            ResultSet rs = statement.executeQuery();
+
+            return rs;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 }

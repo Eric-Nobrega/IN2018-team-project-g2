@@ -62,6 +62,8 @@ public class TravelAdvisorRecordRefund  extends BorderPane {
         // Add Blanks Button Logic
         addBlanksButton.setOnAction(event -> {
             DBMethods.refundTicket(Integer.parseInt(blankTypeField.getValue()));
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Successfully Recorded A Refund");
+            alert.showAndWait();
         });
 
         // Create Horizontal Box for Blank Type Input

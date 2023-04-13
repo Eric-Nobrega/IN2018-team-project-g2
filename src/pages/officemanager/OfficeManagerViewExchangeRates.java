@@ -54,8 +54,8 @@ public class OfficeManagerViewExchangeRates extends BorderPane {
         try {
             // Populate table view with exchange rates
             while (rs.next()) {
-                ExchangeRate exchangeRate = new ExchangeRate(1, rs.getString("CurrencyName"), rs.getInt("AmountUSD"));
-                exchangeRate.setAmountUSD(rs.getInt("AmountUSD"));
+                ExchangeRate exchangeRate = new ExchangeRate(1, rs.getString("CurrencyName"), rs.getDouble("AmountUSD"));
+                exchangeRate.setAmountUSD(rs.getDouble("AmountUSD"));
                 exchangeRateTable.getItems().add(exchangeRate);
             }
         } catch (SQLException e) {

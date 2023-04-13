@@ -4,9 +4,9 @@ public class ExchangeRate {
     public int Amount;
     public String CurrencyName;
 
-    public int amountUSD;
+    public double amountUSD;
 
-    public ExchangeRate(int Amount, String CurrencyName, int amountUSD) {
+    public ExchangeRate(int Amount, String CurrencyName, double amountUSD) {
         this.Amount = Amount;
         this.CurrencyName = CurrencyName;
         this.amountUSD = amountUSD;
@@ -20,7 +20,7 @@ public class ExchangeRate {
         return CurrencyName;
     }
 
-    public int getAmountUSD() {
+    public double getAmountUSD() {
         return amountUSD;
     }
 
@@ -32,7 +32,7 @@ public class ExchangeRate {
         CurrencyName = currencyName;
     }
 
-    public void setAmountUSD(int amountUSD) {
+    public void setAmountUSD(double amountUSD) {
         this.amountUSD = amountUSD;
     }
 }

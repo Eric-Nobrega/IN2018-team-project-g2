@@ -116,7 +116,8 @@ public class TravelAdvisorRecordSale extends BorderPane {
 
             DBMethods.recordSale(customerName, address, email, phoneNumber, date, destination, payNowOrLater, paymentMethod, currencyName, priceAmount, cardNumber, cardCVV, discountGiven, blankType);
 
-            System.out.println("Form submitted!");
+
+
         });
 
         // Create the Left Form GridPane and add the input fields to it

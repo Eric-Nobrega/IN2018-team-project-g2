@@ -35,7 +35,7 @@ public class TravelAdvisorMainPage extends BorderPane {
         blankTypeField.setPromptText("Record A Sale");
         Button recordRefundButton = new Button("Record A Refund");
         Button viewCustomerDetailsButton = new Button("View Customer Details");
-        Button addNewCustomerDetailsButton = new Button("Add New Customer Details");
+        Button viewRefundsButton = new Button("View Refunds");
 
         ResultSet rs2 = getAllBlanksCodes();
 
@@ -73,6 +73,12 @@ public class TravelAdvisorMainPage extends BorderPane {
         TravelAdvisorViewOwnBlankStock travelAdvisorViewOwnBlankStock = new TravelAdvisorViewOwnBlankStock(stage);
          Scene scene = new Scene(travelAdvisorViewOwnBlankStock, 850, 500);
         stage.setScene(scene);
+        });
+
+        viewRefundsButton.setOnAction(event -> {
+          TravelAdvisorViewRefunds travelAdvsorViewRefunds = new TravelAdvisorViewRefunds(stage);
+          Scene scene = new Scene(travelAdvsorViewRefunds, 850, 500);
+          stage.setScene(scene);
         });
 
         viewCustomerDetailsButton.setOnAction(event -> {
@@ -114,10 +120,10 @@ public class TravelAdvisorMainPage extends BorderPane {
         blankTypeField.setPrefWidth(buttonWidth);
         recordRefundButton.setPrefWidth(buttonWidth);
         viewCustomerDetailsButton.setPrefWidth(buttonWidth);
-        addNewCustomerDetailsButton.setPrefWidth(buttonWidth);
+        viewRefundsButton.setPrefWidth(buttonWidth);
 
         // Center the Items
-        VBox centerBox = new VBox(20, generateDomesticSalesReport, generateInterlineSalesReport,  viewOwnBlankStockButton, blankTypeField, recordRefundButton , viewCustomerDetailsButton, addNewCustomerDetailsButton);
+        VBox centerBox = new VBox(20, generateDomesticSalesReport, generateInterlineSalesReport,  viewOwnBlankStockButton, blankTypeField, recordRefundButton , viewCustomerDetailsButton, viewRefundsButton);
         centerBox.setAlignment(Pos.CENTER);
 
         BorderPane.setMargin(pageTitle, new Insets(65));

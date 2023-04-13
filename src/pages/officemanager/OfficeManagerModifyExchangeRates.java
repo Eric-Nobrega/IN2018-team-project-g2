@@ -75,7 +75,7 @@ public class OfficeManagerModifyExchangeRates extends BorderPane {
             // IF the fields are all filled out
             if (!(currencyName.isEmpty()) && !(amountInUSD.isEmpty())) {
                 // convert amountInUSD to integer
-                int amountUSD = Integer.parseInt(amountInUSD);
+                double amountUSD = Double.parseDouble(amountInUSD);
                 // call the database update method
                 DBMethods.updateExchangeRate(currencyName, amountUSD);
                 // redirect the user to the office manager homepage

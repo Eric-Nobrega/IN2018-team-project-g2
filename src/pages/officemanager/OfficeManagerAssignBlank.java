@@ -56,7 +56,7 @@ public class OfficeManagerAssignBlank extends BorderPane {
         try {
             // iterate over the ResultSet and add each FullName value to the ComboBox
             while (rs.next()) {
-                String fullName = rs.getString("AdvisorFirstName") + " " +  rs.getString("AdvisorLastName");
+                String fullName = rs.getString("AdvisorFirstName") + " " + rs.getString("AdvisorLastName");
                 travelAdvisorComboBox.getItems().add(fullName);
             }
         } catch (SQLException e) {
